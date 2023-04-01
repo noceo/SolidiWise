@@ -11,8 +11,9 @@ contract ExpenseListFactory {
     owner = _owner;
   }
 
-  function createExpenseList(address _owner, string memory _name, address[] memory _participants) public {
+  function createExpenseList(address _owner, string memory _name, address[] memory _participants) public returns(ExpenseList){
     ExpenseList expenseList = new ExpenseList(_owner, _name, _participants);
     expenseLists.push(expenseList);
+    return expenseList;
   }
 }
