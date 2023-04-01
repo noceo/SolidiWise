@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity ^0.8.19;
 
 contract ExpenseList {
-  string public name = "TestList";
+  address public owner;
+  string public name;
+
+  constructor(address _owner, string memory _name) {
+    owner = _owner;
+    name = _name;
+  }
 }
