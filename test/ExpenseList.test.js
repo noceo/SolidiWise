@@ -82,7 +82,7 @@ contract("ExpenseList", (accounts) => {
   });
 
   it("updates an existing expense", async () => {
-    // Add a new expense
+    // Add new expenses
     await this.expenseList.addExpense("SampleExpense1", accounts[0], [accounts[1], accounts[2]], "0", "");
     await this.expenseList.addExpense("SampleExpense2", accounts[0], [accounts[1], accounts[2]], "0", "");
     await this.expenseList.addExpense("SampleExpense3", accounts[0], [accounts[1], accounts[2]], "0", "");
@@ -102,6 +102,15 @@ contract("ExpenseList", (accounts) => {
 
     // Make a "real" function call that modifies the state of the contract
     const tx = await this.expenseList.updateExpense(1, sampleExpense.name, sampleExpense.spender, sampleExpense.debtors, sampleExpense.mode, sampleExpense.notes);
+
+    // Retrieve the updated expense and check for equality with the initially submitted sample update expense
+    const updatedExpense = await this.expenseList.getExpenseAtIndex.call(1);
+    assert.equal(updatedExpense[0].toNumber(), 1);
+    assert.equal(updatedExpense[1], sampleExpense.name);
+    assert.equal(updatedExpense[2], sampleExpense.spender);
+    assert.deepEqual(updatedExpense[3], sampleExpense.debtors);
+    assert.equal(updatedExpense[4], sampleExpense.mode);
+    assert.equal(updatedExpense[5], sampleExpense.notes);
 
     // Check if event is submitted successfully
     truffleAssert.eventEmitted(
