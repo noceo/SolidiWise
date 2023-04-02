@@ -13,8 +13,8 @@ contract ExpenseList is AccessControlEnumerable {
     _;
   }
 
-  modifier onlyParticipant() {
-    require(hasRole(PARTICIPANT_ROLE, msg.sender), "Restricted to members of the list.");
+  modifier onlyMember() {
+    require(hasRole(PARTICIPANT_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Restricted to members of the list.");
     _;
   }
 
@@ -38,7 +38,7 @@ contract ExpenseList is AccessControlEnumerable {
   mapping(uint256 => Expense) private expenses;
   uint256[] private expenseIndices;
   string private notes;
-  uint256 uuidCounter = 0;
+  uint256 uuidCounter = 1;
 
   event LogNewExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
   event LogUpdateExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
@@ -46,7 +46,7 @@ contract ExpenseList is AccessControlEnumerable {
 
   constructor(address _owner, string memory _name, address[] memory _participants) {
     _setupRole(DEFAULT_ADMIN_ROLE, _owner);
-    _setRoleAdmin(PARTICIPANT_ROLE, DEFAULT_ADMIN_ROLE);
+    // _setRoleAdmin(PARTICIPANT_ROLE, DEFAULT_ADMIN_ROLE);
     
     owner = _owner;
     name = _name;
@@ -63,23 +63,23 @@ contract ExpenseList is AccessControlEnumerable {
     return (expenseIndices[expenses[_id].id] == _id);
   }
 
-  function addExpense(string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public returns(uint index) {
-    require(hasRole(PARTICIPANT_ROLE, _spender));
+  function addExpense(string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(uint256 index) {
+    require(hasRole(PARTICIPANT_ROLE, _spender) || hasRole(DEFAULT_ADMIN_ROLE, _spender), "Specified spender is not member of the list.");
     for (uint i = 0; i < _debtors.length; i++) {
-      require(hasRole(PARTICIPANT_ROLE, _debtors[i]));
+      require(hasRole(PARTICIPANT_ROLE, _debtors[i]) || hasRole(DEFAULT_ADMIN_ROLE, _debtors[i]), "One or more of the specified debtors are not members of the list.");
     }
 
     uint256 id = uuidCounter;
     expenseIndices.push(id);
-    Expense memory expense = Expense(expenseIndices.length-1, _name, _spender, _debtors, _mode, _notes);
+    Expense memory expense = Expense(id, _name, _spender, _debtors, _mode, _notes);
     expenses[id] = expense;
     uuidCounter++;
 
     emit LogNewExpense(id, _name, _spender, _debtors, _mode, _notes);
-    return expenseIndices.length-1;
+    return id;
   }
 
-  function updateExpense(uint256 _id, string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public returns(bool success) {
+  function updateExpense(uint256 _id, string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(bool success) {
     require(isExpense(_id), "Not a valid expense ID."); 
     Expense memory expense = Expense(_id, _name, _spender, _debtors, _mode, _notes);
     expenses[_id] = expense;
@@ -88,7 +88,7 @@ contract ExpenseList is AccessControlEnumerable {
     return true;
   }
 
-  function deleteExpense(uint256 _id) public returns(uint256 id) {
+  function deleteExpense(uint256 _id) public onlyMember returns(uint256 id) {
     require(isExpense(_id), "Not a valid expense ID."); 
     uint256 expenseToDelete = expenses[_id].id;
     uint256 lastElement = expenseIndices[expenseIndices.length-1];
