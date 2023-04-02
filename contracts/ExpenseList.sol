@@ -38,7 +38,6 @@ contract ExpenseList is AccessControlEnumerable {
   mapping(uint256 => Expense) private expenses;
   uint256[] private expenseIndices;
   string private notes;
-  uint256 uuidCounter = 1;
 
   event LogNewExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
   event LogUpdateExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
@@ -69,11 +68,10 @@ contract ExpenseList is AccessControlEnumerable {
       require(hasRole(PARTICIPANT_ROLE, _debtors[i]) || hasRole(DEFAULT_ADMIN_ROLE, _debtors[i]), "One or more of the specified debtors are not members of the list.");
     }
 
-    uint256 id = uuidCounter;
+    uint256 id = expenseIndices.length;
     expenseIndices.push(id);
     Expense memory expense = Expense(id, _name, _spender, _debtors, _mode, _notes);
     expenses[id] = expense;
-    uuidCounter++;
 
     emit LogNewExpense(id, _name, _spender, _debtors, _mode, _notes);
     return id;
@@ -104,8 +102,9 @@ contract ExpenseList is AccessControlEnumerable {
     return expenseIndices.length;
   }
 
-  function getExpenseAtIndex(uint256 _id) public view returns(uint256 id) {
-    return expenseIndices[_id];
+  function getExpenseAtIndex(uint256 _id) public view returns(uint256 , string memory, address, address[] memory, ExpenseMode, string memory) {
+    uint256 index = expenseIndices[_id]; // just for readability
+    return (expenses[index].id, expenses[index].name, expenses[index].spender, expenses[index].debtors, expenses[index].mode, expenses[index].notes);
   }
 
   function getName() public view returns(string memory) {
