@@ -25,7 +25,8 @@ contract ExpenseList is AccessControlEnumerable {
   }
 
   struct Expense {
-    bytes32 id;
+    uint256 id;
+    string name;
     address spender;
     address[] debtors;
     ExpenseMode mode;
@@ -34,9 +35,14 @@ contract ExpenseList is AccessControlEnumerable {
 
   string private name;
   address private owner;
-  Expense[] private expenses;
+  mapping(uint256 => Expense) private expenses;
+  uint256[] private expenseIndices;
   string private notes;
-  uint256 uuidCounter;
+  uint256 uuidCounter = 0;
+
+  event LogNewExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
+  event LogUpdateExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
+  event LogDeleteExpense(uint256 id);
 
   constructor(address _owner, string memory _name, address[] memory _participants) {
     _setupRole(DEFAULT_ADMIN_ROLE, _owner);
@@ -50,6 +56,56 @@ contract ExpenseList is AccessControlEnumerable {
         _setupRole(PARTICIPANT_ROLE, _participants[i]);
       }
     }
+  }
+
+  function isExpense(uint256 _id) private view returns(bool isIndeed) {
+    if(expenseIndices.length == 0) return false;
+    return (expenseIndices[expenses[_id].id] == _id);
+  }
+
+  function addExpense(string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public returns(uint index) {
+    require(hasRole(PARTICIPANT_ROLE, _spender));
+    for (uint i = 0; i < _debtors.length; i++) {
+      require(hasRole(PARTICIPANT_ROLE, _debtors[i]));
+    }
+
+    uint256 id = uuidCounter;
+    expenseIndices.push(id);
+    Expense memory expense = Expense(expenseIndices.length-1, _name, _spender, _debtors, _mode, _notes);
+    expenses[id] = expense;
+    uuidCounter++;
+
+    emit LogNewExpense(id, _name, _spender, _debtors, _mode, _notes);
+    return expenseIndices.length-1;
+  }
+
+  function updateExpense(uint256 _id, string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public returns(bool success) {
+    require(isExpense(_id), "Not a valid expense ID."); 
+    Expense memory expense = Expense(_id, _name, _spender, _debtors, _mode, _notes);
+    expenses[_id] = expense;
+    
+    emit LogUpdateExpense(_id, _name, _spender, _debtors, _mode, _notes);
+    return true;
+  }
+
+  function deleteExpense(uint256 _id) public returns(uint256 id) {
+    require(isExpense(_id), "Not a valid expense ID."); 
+    uint256 expenseToDelete = expenses[_id].id;
+    uint256 lastElement = expenseIndices[expenseIndices.length-1];
+    expenseIndices[expenseToDelete] = lastElement;
+    expenses[lastElement].id = expenseToDelete;
+    delete expenseIndices[expenseIndices.length-1];
+    emit LogDeleteExpense(expenseToDelete);
+    emit LogUpdateExpense(expenseToDelete, expenses[lastElement].name, expenses[lastElement].spender, expenses[lastElement].debtors, expenses[lastElement].mode, expenses[lastElement].notes);
+    return expenseToDelete;
+  }
+
+  function getExpenseCount() public view returns(uint256 count) {
+    return expenseIndices.length;
+  }
+
+  function getExpenseAtIndex(uint256 _id) public view returns(uint256 id) {
+    return expenseIndices[_id];
   }
 
   function getName() public view returns(string memory) {
@@ -83,19 +139,6 @@ contract ExpenseList is AccessControlEnumerable {
 
   function addParticipant(address account) public onlyAdmin {
     grantRole(PARTICIPANT_ROLE, account);
-  }
-
-  function getExpenses() public view returns(Expense[] memory){
-    return expenses;
-  }
-
-  function addExpense(address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyParticipant {
-    require(hasRole(PARTICIPANT_ROLE, _spender));
-    for (uint i = 0; i < _debtors.length; i++) {
-      require(hasRole(PARTICIPANT_ROLE, _debtors[i]));
-    }
-    Expense memory expense = Expense(keccak256(abi.encode(uuidCounter)), _spender, _debtors, _mode, _notes);
-    expenses.push(expense);
   }
 
   function getNotes() public view returns(string memory) {
