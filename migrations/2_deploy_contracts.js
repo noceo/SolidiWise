@@ -1,5 +1,5 @@
-const ExpenseList = artifacts.require("ExpenseList");
+const ExpenseListFactory = artifacts.require("ExpenseListFactory");
 
 module.exports = function (deployer) {
-  deployer.deploy(ExpenseList);
+  deployer.deploy(ExpenseListFactory);
 };
