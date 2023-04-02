@@ -37,16 +37,35 @@ contract("ExpenseList", (accounts) => {
     await truffleAssert.reverts(this.expenseList.addExpense("TestExpense", accounts[0], [accounts[5], accounts[2]], "0", ""), "One or more of the specified debtors are not members of the list.");
 
     // Create multiple expenses and add them to the list
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 0; i < 5; i++) {
+      // Create a sample expense
+      const sampleExpense = {
+        name: `TestExpense${i}`,
+        spender: accounts[0],
+        debtors: [accounts[1], accounts[2]],
+        mode: "0",
+        notes: "",
+      };
+
       // Make a fake function call without modifying the state to verify that the return value is correct
-      const id = await this.expenseList.addExpense.call(`TestExpense${i}`, accounts[0], [accounts[1], accounts[2]], "0", "");
+      const id = await this.expenseList.addExpense.call(sampleExpense.name, sampleExpense.spender, sampleExpense.debtors, sampleExpense.mode, sampleExpense.notes);
       assert.equal(id.toNumber(), i);
 
       // Make a "real" function call that modifies the state of the contract
-      const result = await this.expenseList.addExpense(`TestExpense${i}`, accounts[0], [accounts[1], accounts[2]], "0", "");
+      const tx = await this.expenseList.addExpense(sampleExpense.name, sampleExpense.spender, sampleExpense.debtors, sampleExpense.mode, sampleExpense.notes);
 
+      // Retrieve the created expense and check for equality with the initially submitted sample expense
+      const createdExpense = await this.expenseList.getExpenseAtIndex.call(id.toNumber());
+      assert.equal(createdExpense[0].toNumber(), id.toNumber());
+      assert.equal(createdExpense[1], sampleExpense.name);
+      assert.equal(createdExpense[2], sampleExpense.spender);
+      assert.deepEqual(createdExpense[3], sampleExpense.debtors);
+      assert.equal(createdExpense[4], sampleExpense.mode);
+      assert.equal(createdExpense[5], sampleExpense.notes);
+
+      // Check if event is submitted successfully
       truffleAssert.eventEmitted(
-        result,
+        tx,
         "LogNewExpense",
         (event) => {
           const id = event.id.toNumber() === i;
