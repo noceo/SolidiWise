@@ -5,15 +5,19 @@ import "./ExpenseList.sol";
 
 contract ExpenseListFactory {
   address public owner;
-  ExpenseList[] expenseLists;
+  address[] public expenseLists;
 
-  constructor(address _owner) {
-    owner = _owner;
+  constructor() {
+    owner = msg.sender;
   }
 
-  function createExpenseList(address _owner, string memory _name, address[] memory _participants) public returns(ExpenseList){
-    ExpenseList expenseList = new ExpenseList(_owner, _name, _participants);
+  function createExpenseList(address _owner, string memory _name, address[] memory _participants) public returns(address) {
+    address expenseList = address(new ExpenseList(_owner, _name, _participants));
     expenseLists.push(expenseList);
     return expenseList;
+  }
+
+  function getExpenseLists() public view returns (address[] memory) {
+    return expenseLists;
   }
 }
