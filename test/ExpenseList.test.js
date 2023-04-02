@@ -52,11 +52,9 @@ contract("ExpenseList", (accounts) => {
           const id = event.id.toNumber() === i;
           const name = event.name === `TestExpense${i}`;
           const spender = event.spender === accounts[0];
-          // console.log(event.debtors);
           const debtors = event.debtors[0] === accounts[1] && event.debtors[1] === accounts[2];
           const mode = event.mode.toNumber() === 0;
           const notes = event.notes === "";
-          // console.log("EVENT DETAILS: ", event.id.toNumber(), event.name, event.spender, event.mode, event.notes);
           return id && name && spender && debtors && mode && notes;
         },
         "Contract should emit a correct LogNewExpense event."
