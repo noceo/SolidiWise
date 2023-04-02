@@ -2,7 +2,7 @@ const ExpenseList = artifacts.require("ExpenseList");
 const truffleAssert = require("truffle-assertions");
 
 contract("ExpenseList", (accounts) => {
-  before(async () => {
+  beforeEach(async () => {
     this.expenseList = await ExpenseList.new(accounts[0], "SampleExpenseList", [accounts[1], accounts[2], accounts[3]]);
   });
 
@@ -69,15 +69,54 @@ contract("ExpenseList", (accounts) => {
         "LogNewExpense",
         (event) => {
           const id = event.id.toNumber() === i;
-          const name = event.name === `TestExpense${i}`;
-          const spender = event.spender === accounts[0];
-          const debtors = event.debtors[0] === accounts[1] && event.debtors[1] === accounts[2];
-          const mode = event.mode.toNumber() === 0;
-          const notes = event.notes === "";
+          const name = event.name === sampleExpense.name;
+          const spender = event.spender === sampleExpense.spender;
+          const debtors = event.debtors[0] === sampleExpense.debtors[0] && event.debtors[1] === sampleExpense.debtors[1];
+          const mode = event.mode.toNumber() === Number(sampleExpense.mode);
+          const notes = event.notes === sampleExpense.notes;
           return id && name && spender && debtors && mode && notes;
         },
         "Contract should emit a correct LogNewExpense event."
       );
     }
+  });
+
+  it("updates an existing expense", async () => {
+    // Add a new expense
+    await this.expenseList.addExpense("SampleExpense1", accounts[0], [accounts[1], accounts[2]], "0", "");
+    await this.expenseList.addExpense("SampleExpense2", accounts[0], [accounts[1], accounts[2]], "0", "");
+    await this.expenseList.addExpense("SampleExpense3", accounts[0], [accounts[1], accounts[2]], "0", "");
+
+    // Create a sample update expense
+    const sampleExpense = {
+      name: `UpdatedTestExpense`,
+      spender: accounts[1],
+      debtors: [accounts[3], accounts[4]],
+      mode: "1",
+      notes: "Expense updated.",
+    };
+
+    // Make a fake function call without modifying the state to verify that the return value is correct
+    const updated = await this.expenseList.updateExpense.call(1, sampleExpense.name, sampleExpense.spender, sampleExpense.debtors, sampleExpense.mode, sampleExpense.notes);
+    assert.ok(updated);
+
+    // Make a "real" function call that modifies the state of the contract
+    const tx = await this.expenseList.updateExpense(1, sampleExpense.name, sampleExpense.spender, sampleExpense.debtors, sampleExpense.mode, sampleExpense.notes);
+
+    // Check if event is submitted successfully
+    truffleAssert.eventEmitted(
+      tx,
+      "LogUpdateExpense",
+      (event) => {
+        const id = event.id.toNumber() === 1;
+        const name = event.name === sampleExpense.name;
+        const spender = event.spender === sampleExpense.spender;
+        const debtors = event.debtors[0] === sampleExpense.debtors[0] && event.debtors[1] === sampleExpense.debtors[1];
+        const mode = event.mode.toNumber() === Number(sampleExpense.mode);
+        const notes = event.notes === sampleExpense.notes;
+        return id && name && spender && debtors && mode && notes;
+      },
+      "Contract should emit a correct LogNewExpense event."
+    );
   });
 });
