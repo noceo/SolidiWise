@@ -8,11 +8,14 @@
   },
   "scripts": {
     "compile": "truffle compile",
-    "migrate": "truffle migrate",
+    "migrate": "truffle migrate --network development",
+    "deploy": "truffle migrate --network live",
     "test": "truffle test ./test/ExpenseList.test.js",
     "ganache": "ganache"
   },
   "devDependencies": {
+    "@truffle/hdwallet-provider": "^2.1.9",
+    "dotenv": "^16.0.3",
     "ganache": "^7.7.7",
     "truffle": "5.8.1",
     "truffle-assertions": "^0.9.2"

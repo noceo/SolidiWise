@@ -1,3 +1,7 @@
+require("dotenv").config();
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const { INFURA_API_KEY, MNEMONIC } = process.env;
+
 /**
  * Use this file to configure your truffle project. It's seeded with some
  * common settings for different networks and features like migrations,
@@ -82,13 +86,13 @@ module.exports = {
     //
     // Useful for deploying to a public network.
     // Note: It's important to wrap the provider as a function to ensure truffle uses a new provider every time.
-    // goerli: {
-    //   provider: () => new HDWalletProvider(MNEMONIC, `https://goerli.infura.io/v3/${PROJECT_ID}`),
-    //   network_id: 5,       // Goerli's id
-    //   confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
-    //   timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //   skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
-    // },
+    live: {
+      provider: () => new HDWalletProvider(MNEMONIC, `https://goerli.infura.io/v3/${INFURA_API_KEY}`),
+      network_id: 5, // Goerli's id
+      confirmations: 2, // # of confirmations to wait between deployments. (default: 0)
+      timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
+    },
     //
     // Useful for private networks
     // private: {
