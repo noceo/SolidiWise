@@ -7,8 +7,8 @@ contract ExpenseListFactory {
   address public owner;
   address[] public expenseLists;
 
-  constructor() {
-    owner = msg.sender;
+  constructor(address _owner) {
+    owner = _owner;
   }
 
   function createExpenseList(address _owner, string memory _name, address[] memory _participants) public returns(address) {
