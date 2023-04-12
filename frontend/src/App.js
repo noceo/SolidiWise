@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import Web3 from "web3";
-import "./App.css";
-import ExpenseList from "./ExpenseList";
+import "./assets/styles/App.css";
+import ExpenseList from "./components/ExpenseList";
 import Button from "react-bootstrap/Button";
-import FormCreateExpenseList from "./FormCreateExpenseList";
-import CustomModal from "./CustomModal";
+import FormCreateExpenseList from "./components/FormCreateExpenseList";
+import CustomModal from "./components/CustomModal";
 import { EXPENSE_LIST_FACTORY_ADDRESS, EXPENSE_LIST_FACTORY_ABI } from "./config.js";
 
 const App = (props) => {
@@ -19,13 +19,18 @@ const App = (props) => {
   const [modalHeader, setModalHeader] = useState("");
   const [modalBody, setModalBody] = useState(null);
   const [modalSubmit, setModalSubmit] = useState("");
-  const handleClose = () => setShow(false);
+  const handleClose = () => {
+    setShow(false);
+    console.log(participants);
+  };
   const handleShow = (modalHeader, modalBody, modalSubmit) => {
     setModalHeader(modalHeader);
     setModalBody(modalBody);
     setModalSubmit(modalSubmit);
     setShow(true);
   };
+
+  const [participants, setParticipants] = useState(null);
 
   useEffect(() => {
     const loadBlockchainData = async () => {
@@ -42,7 +47,7 @@ const App = (props) => {
     loadBlockchainData();
   }, []);
 
-  const modalBodyCreateList = <FormCreateExpenseList />;
+  const modalBodyCreateList = <FormCreateExpenseList sendParticipantInformation={setParticipants} />;
 
   const modalSubmitCreateList = (
     <Button variant="primary" type="submit">
