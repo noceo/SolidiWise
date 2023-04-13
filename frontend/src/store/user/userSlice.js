@@ -29,7 +29,7 @@ const userSlice = createSlice({
 });
 
 export const fetchUser = createAsyncThunk("user/fetchUser", async () => {
-  const accounts = await network.eth.getAccounts();
+  const accounts = await window.network.eth.getAccounts();
   console.log("FETCH", accounts);
   return accounts[0];
 });
