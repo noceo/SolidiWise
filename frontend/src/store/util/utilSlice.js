@@ -3,7 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   metamaskInstalled: false,
   metamaskConnected: false,
-  accounts: [],
 };
 
 const utilSlice = createSlice({

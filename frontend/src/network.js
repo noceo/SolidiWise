@@ -1,18 +1,36 @@
+import detectEthereumProvider from "@metamask/detect-provider";
+import { store } from "./store/store";
+import { setCurrentAccount } from "./store/user/userSlice";
+import { setMetamaskInstalled, setMetamaskConnected } from "./store/util/utilSlice";
+import Web3 from "web3";
+
 export const initializeWallet = async () => {
-  const installed = isMetaMaskInstalled();
-  const connected = await isMetaMaskConnected();
-  return [installed, connected];
-};
+  if (!store.getState().util.metamaskConnected) {
+    const provider = await detectEthereumProvider();
+    if (provider !== window.ethereum) {
+      store.dispatch(setMetamaskInstalled(false));
+      store.dispatch(setMetamaskConnected(false));
+      return;
+    }
 
-export const isMetaMaskConnected = async () => {
-  if (window.network) {
-    const provider = window.network.currentProvider;
-    const accounts = await provider.request({ method: "eth_requestAccounts" });
-    return accounts && accounts.length > 0;
+    provider.on("accountsChanged", handleAccountsChanged);
+    window.metamask = new Web3(window.ethereum);
+    store.dispatch(setMetamaskInstalled(true));
   }
-  return false;
+
+  await connect();
 };
 
-export const isMetaMaskInstalled = () => {
-  return Boolean(window.ethereum && window.ethereum.isMetaMask);
+const handleAccountsChanged = (accounts) => {
+  if (accounts.length === 0) {
+    console.log("Please connect to Metamask.");
+  } else if (accounts[0] !== store.getState().user.currentAccount) {
+    store.dispatch(setCurrentAccount(accounts[0]));
+  }
+};
+
+const connect = async () => {
+  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  handleAccountsChanged(accounts);
+  store.dispatch(setMetamaskConnected(true));
 };

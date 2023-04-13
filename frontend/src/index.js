@@ -12,8 +12,6 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import PageNotFound from "./pages/PageNotFound";
 import PageExpenseList from "./pages/PageExpenseList";
 
-window.network = new Web3(window.ethereum);
-
 const router = createBrowserRouter([
   {
     path: "/",

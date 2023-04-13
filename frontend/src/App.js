@@ -8,8 +8,6 @@ import FormCreateExpenseList from "./components/FormCreateExpenseList";
 import CustomModal from "./components/CustomModal";
 import ExpenseGroupList from "./components/ExpenseGroupList";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser } from "./store/user/userSlice";
-import { setMetamaskInstalled, setMetamaskConnected } from "./store/util/utilSlice";
 
 const App = (props) => {
   const user = useSelector((state) => state.user);
@@ -38,27 +36,17 @@ const App = (props) => {
   });
 
   const initWallet = async () => {
-    const [installed, connected] = await initializeWallet();
-    console.log(installed, connected);
-    dispatch(setMetamaskInstalled(installed));
-    dispatch(setMetamaskConnected(connected));
-    if (connected) {
-      dispatch(fetchUser());
-    }
+    await initializeWallet();
   };
 
   useEffect(() => {
     const loadBlockchainData = async () => {
-      if (window.network) {
-        const expenseListFactory = new window.network.eth.Contract(EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_FACTORY_ADDRESS);
-        const accounts = await window.network.eth.getAccounts();
+      if (window.ethereum) {
+        const expenseListFactory = new window.metamask.eth.Contract(EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_FACTORY_ADDRESS);
+        const accounts = await window.metamask.eth.getAccounts();
         const expenseList = await expenseListFactory.methods.createExpenseList(accounts[0], "TestGroup", [accounts[1]]).estimateGas();
       }
     };
-
-    if (connected && user.address === "") {
-      dispatch(fetchUser());
-    }
 
     if (!expenseGroups) {
       loadBlockchainData();
@@ -86,7 +74,7 @@ const App = (props) => {
         <Spinner />
       </p>
     );
-  else addressElement = <p className="mb-5">Your account: {user.address}</p>;
+  else addressElement = <p className="mb-5">Your account: {user.currentAccount}</p>;
 
   console.log("EXPENSE_GROUPS", expenseGroups);
 
