@@ -79,7 +79,7 @@ const App = (props) => {
   console.log("EXPENSE_GROUPS", expenseGroups);
 
   return (
-    <div className="app container">
+    <div className="app container h-100">
       <h1>SolidiWise</h1>
       {addressElement}
       <ExpenseGroupList listItems={expenseGroups} />
