@@ -4,6 +4,10 @@ body,
   margin: 0;
   height: 100%;
 }
+
+.container:first-child {
+  padding-top: 50px;
+}
 /*
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
