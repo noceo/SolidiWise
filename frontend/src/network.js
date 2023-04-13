@@ -17,11 +17,11 @@ export const initializeWallet = async () => {
     window.metamask = new Web3(window.ethereum);
     store.dispatch(setMetamaskInstalled(true));
   }
-
   await connect();
 };
 
 const handleAccountsChanged = (accounts) => {
+  console.log("ACCOUNT_CHANGE");
   if (accounts.length === 0) {
     console.log("Please connect to Metamask.");
   } else if (accounts[0] !== store.getState().user.currentAccount) {
@@ -29,8 +29,12 @@ const handleAccountsChanged = (accounts) => {
   }
 };
 
-const connect = async () => {
+export const connect = async () => {
   const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
   handleAccountsChanged(accounts);
   store.dispatch(setMetamaskConnected(true));
+
+  if (localStorage.getItem("metamask_is_connected") === null || localStorage.getItem("metamask_is_connected") === false) {
+    localStorage.setItem("metamask_is_connected", true);
+  }
 };

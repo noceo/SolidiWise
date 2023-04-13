@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { initializeWallet } from "./network";
+import { connect, initializeWallet } from "./network";
 import { EXPENSE_LIST_FACTORY_ADDRESS, EXPENSE_LIST_FACTORY_ABI } from "./config.js";
 import "./assets/styles/App.css";
 import Button from "react-bootstrap/Button";
@@ -45,10 +45,18 @@ const App = (props) => {
         const expenseListFactory = new window.metamask.eth.Contract(EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_FACTORY_ADDRESS);
         const accounts = await window.metamask.eth.getAccounts();
         const expenseList = await expenseListFactory.methods.createExpenseList(accounts[0], "TestGroup", [accounts[1]]).estimateGas();
+        console.log(expenseList);
       }
     };
+    const connectWallet = async () => {
+      await connect();
+    };
 
-    if (!expenseGroups) {
+    if (localStorage.getItem("metamask_is_connected")) {
+      connectWallet();
+    }
+
+    if (connected && !expenseGroups) {
       loadBlockchainData();
     }
   }, []);

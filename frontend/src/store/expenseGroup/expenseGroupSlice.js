@@ -1,27 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = [
-  {
-    id: 1,
-    name: "Group 1",
-    owner: "0x0",
-    participants: [],
-    data: [1, 2, 3],
-  },
-  {
-    id: 2,
-    name: "Group 2",
-    owner: "0x0",
-    participants: [],
-    data: [1, 2, 3],
-  },
-  {
-    id: 3,
-    name: "Group 3",
-    owner: "0x0",
-    participants: [],
-    data: [1, 2, 3],
-  },
+  // {
+  //   id: 1,
+  //   name: "Group 1",
+  //   owner: "0x0",
+  //   participants: [],
+  //   data: [1, 2, 3],
+  // },
+  // {
+  //   id: 2,
+  //   name: "Group 2",
+  //   owner: "0x0",
+  //   participants: [],
+  //   data: [1, 2, 3],
+  // },
+  // {
+  //   id: 3,
+  //   name: "Group 3",
+  //   owner: "0x0",
+  //   participants: [],
+  //   data: [1, 2, 3],
+  // },
 ];
 
 const expenseGroupSlice = createSlice({
