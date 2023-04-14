@@ -1,4 +1,4 @@
-export const EXPENSE_LIST_FACTORY_ADDRESS = "0xD1943d33c0b14aC960E29e8Dcc1022D4D8e1d2DC";
+export const EXPENSE_LIST_FACTORY_ADDRESS = "0xa5AfAC120C68D475D295d69aa0828C89726f9a36";
 
 export const EXPENSE_LIST_FACTORY_ABI = [
   {
@@ -13,7 +13,37 @@ export const EXPENSE_LIST_FACTORY_ABI = [
     type: "constructor",
   },
   {
+    anonymous: false,
     inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "expenseList",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "participants",
+        type: "address[]",
+      },
+    ],
+    name: "ExpenseListCreated",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
       {
         internalType: "uint256",
         name: "",
@@ -48,11 +78,6 @@ export const EXPENSE_LIST_FACTORY_ABI = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "_owner",
-        type: "address",
-      },
       {
         internalType: "string",
         name: "_name",

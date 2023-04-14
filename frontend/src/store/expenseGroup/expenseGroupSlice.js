@@ -1,6 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { store } from "../store";
 
-const initialState = [
+const initialState = {
+  loading: false,
+  data: [],
+  error: "",
   // {
   //   id: 1,
   //   name: "Group 1",
@@ -22,23 +26,40 @@ const initialState = [
   //   participants: [],
   //   data: [1, 2, 3],
   // },
-];
+};
 
 const expenseGroupSlice = createSlice({
   name: "expenseGroup",
   initialState,
   reducers: {
-    set: (state, action) => {
-      state.expenseGroups = action.payload;
+    addExpenseGroup: (state, action) => {
+      state.data = [...state.data, action.payload];
     },
-    add: (state, action) => {
-      state.expenseGroups = [...state.expenseGroups, action.payload];
-    },
-    remove: (state, action) => {
+    removeExpenseGroup: (state, action) => {
       console.log("REMOVED EXPENSE GROUP");
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(fetchExpenseGroups.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchExpenseGroups.fulfilled, (state, action) => {
+      state.loading = false;
+      state.data = action.payload;
+      state.error = "";
+    });
+    builder.addCase(fetchExpenseGroups.rejected, (state, action) => {
+      state.loading = false;
+      state.data = "";
+      state.error = action.error.message;
+    });
+  },
+});
+
+export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGroups", async () => {
+  const currentAccount = store.getState().user.currentAccount;
+  return await window.metamask.expenseListFactory.methods.getExpenseLists().call({ from: currentAccount });
 });
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;
-export const expenseGroupActions = expenseGroupSlice.actions;
+export const { addExpenseGroup, removeExpenseGroup } = expenseGroupSlice.actions;

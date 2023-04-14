@@ -58,17 +58,21 @@ contract ExpenseList is AccessControlEnumerable {
     }
   }
 
+  function addressesAreMembers(address _spender, address[] memory _debtors) private view returns(bool) {
+    require(hasRole(PARTICIPANT_ROLE, _spender) || hasRole(DEFAULT_ADMIN_ROLE, _spender), "Specified spender is not member of the list.");
+    for (uint i = 0; i < _debtors.length; i++) {
+      require(hasRole(PARTICIPANT_ROLE, _debtors[i]) || hasRole(DEFAULT_ADMIN_ROLE, _debtors[i]), "One or more of the specified debtors are not members of the list.");
+    }
+    return true;
+  }
+
   function isExpense(uint256 _id) private view returns(bool isIndeed) {
     if(expenseIndices.length == 0) return false;
     return (expenseIndices[expenses[_id].id] == _id);
   }
 
   function addExpense(string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(uint256 index) {
-    require(hasRole(PARTICIPANT_ROLE, _spender) || hasRole(DEFAULT_ADMIN_ROLE, _spender), "Specified spender is not member of the list.");
-    for (uint i = 0; i < _debtors.length; i++) {
-      require(hasRole(PARTICIPANT_ROLE, _debtors[i]) || hasRole(DEFAULT_ADMIN_ROLE, _debtors[i]), "One or more of the specified debtors are not members of the list.");
-    }
-
+    require(addressesAreMembers(_spender, _debtors));
     uint256 id = uuidCounter;
     expenseIndices.push(id);
     Expense memory expense = Expense(id, _name, _spender, _debtors, _mode, _notes);
@@ -80,7 +84,8 @@ contract ExpenseList is AccessControlEnumerable {
   }
 
   function updateExpense(uint256 _id, string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(bool success) {
-    require(isExpense(_id), "Not a valid expense ID."); 
+    require(isExpense(_id), "Not a valid expense ID.");
+    require(addressesAreMembers(_spender, _debtors));
     Expense memory expense = Expense(_id, _name, _spender, _debtors, _mode, _notes);
     expenses[_id] = expense;
     

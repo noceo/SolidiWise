@@ -5,19 +5,25 @@ import "./ExpenseList.sol";
 
 contract ExpenseListFactory {
   address public owner;
-  address[] public expenseLists;
+  mapping(address => address[]) public expenseLists;
+  event ExpenseListCreated(address indexed expenseList, address indexed owner, address[] participants);
 
   constructor(address _owner) {
     owner = _owner;
   }
 
-  function createExpenseList(address _owner, string memory _name, address[] memory _participants) public returns(address) {
-    address expenseList = address(new ExpenseList(_owner, _name, _participants));
-    expenseLists.push(expenseList);
+  function createExpenseList(string memory _name, address[] memory _participants) public returns(address) {
+    require(_participants.length < 50, "Too many participants.");
+    address expenseList = address(new ExpenseList(msg.sender, _name, _participants));
+    expenseLists[msg.sender].push(expenseList);
+    for (uint i = 0; i < _participants.length; i++) {
+      expenseLists[_participants[i]].push(expenseList);
+    }
+    emit ExpenseListCreated(expenseList, msg.sender, _participants);
     return expenseList;
   }
 
   function getExpenseLists() public view returns (address[] memory) {
-    return expenseLists;
+    return expenseLists[msg.sender];
   }
 }

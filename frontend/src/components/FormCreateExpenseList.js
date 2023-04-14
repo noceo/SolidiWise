@@ -12,7 +12,6 @@ const FormCreateExpenseList = (props) => {
     data[index] = event.target.value;
     setParticipantFields(data);
     console.log(data);
-    props.sendParticipantInformation(data);
   };
 
   const addParticipantField = () => {
@@ -26,7 +25,6 @@ const FormCreateExpenseList = (props) => {
     data.splice(index, 1);
     setParticipantFields(data);
     console.log(data);
-    props.sendParticipantInformation(data);
   };
 
   return (
