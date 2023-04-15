@@ -44,19 +44,20 @@ export const initializeWallet = async () => {
   }
 };
 
-const handleAccountsChanged = (accounts) => {
+const handleAccountsChanged = async (accounts) => {
   console.log("ACCOUNT_CHANGE");
   if (accounts.length === 0) {
     console.log("Please connect to Metamask.");
   } else if (accounts[0] !== store.getState().user.currentAccount) {
     store.dispatch(setCurrentAccount(accounts[0]));
-    store.dispatch(fetchExpenseGroups());
+    await store.dispatch(fetchExpenseGroups());
   }
 };
 
 export const connect = async () => {
   const accounts = await window.metamask.eth.getAccounts();
-  handleAccountsChanged(accounts);
+  await handleAccountsChanged(accounts);
+  console.log(store.getState().expenseGroup.data);
   store.dispatch(setMetamaskInstalled(true));
   store.dispatch(setMetamaskConnected(true));
   console.log("DISPATCHED_CONNECTED", store.getState().util.metamaskConnected);

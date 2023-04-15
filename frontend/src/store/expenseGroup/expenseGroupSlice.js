@@ -54,6 +54,20 @@ const expenseGroupSlice = createSlice({
       state.data = "";
       state.error = action.error.message;
     });
+    builder.addCase(fetchExpensesForGroup.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchExpensesForGroup.fulfilled, (state, action) => {
+      state.loading = false;
+      const groupIndex = state.data.findIndex((group) => group.address === action.meta.arg);
+      state.data[groupIndex].expenses = action.payload;
+      state.error = "";
+    });
+    builder.addCase(fetchExpensesForGroup.rejected, (state, action) => {
+      state.loading = false;
+      state.data = "";
+      state.error = action.error.message;
+    });
   },
 });
 
@@ -77,6 +91,36 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
   expenseLists = await Promise.all(expenseLists);
   console.log("FETCHED_LISTS", expenseLists);
   return expenseLists;
+});
+
+export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpensesForGroup", async (address) => {
+  const contract = window.contracts[address];
+  let expenseCount = 0;
+  try {
+    expenseCount = await contract.methods.getExpenseCount().call();
+    expenseCount = Number(expenseCount);
+  } catch (error) {
+    throw error;
+  }
+
+  if (expenseCount === 0) return [];
+
+  let expenses = [...Array(expenseCount).keys()].map(async (index) => {
+    const expense = await contract.methods.getExpenseAtIndex(index).call();
+    // console.log(expense);
+    return {
+      id: expense[0],
+      name: expense[1],
+      spender: expense[2],
+      debtors: expense[3],
+      mode: expense[4],
+      notes: expense[5],
+    };
+  });
+
+  expenses = Promise.all(expenses);
+  console.log("FETCHED_EXPENSES", expenses);
+  return expenses;
 });
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;

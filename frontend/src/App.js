@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { connect, initializeWallet } from "./network";
 import "./assets/styles/App.css";
 import Button from "react-bootstrap/Button";
@@ -51,34 +51,20 @@ const App = (props) => {
     await initializeWallet();
   });
 
-  const initWallet = async () => {
+  const initWallet = useCallback(async () => {
     try {
       await initializeWallet();
     } catch (e) {
       console.error(e);
     }
-  };
-
-  const loadBlockchainData = async () => {
-    // if (window.ethereum) {
-    //   const accounts = await window.metamask.eth.getAccounts();
-    //   const expenseList = await expenseListFactory.methods.createExpenseList(accounts[0], "TestGroup", ["0xbe7770F9Caae053fA0126f9c58ee936520D26A20"]).estimateGas();
-    //   console.log(expenseList);
-    // }
-  };
+  });
 
   useEffect(() => {
     if (!connected && localStorage.getItem("metamask_is_connected")) {
       console.log("Connection established");
       initWallet();
     }
-
-    if (connected) {
-      console.log("CONN", connected);
-      loadBlockchainData();
-      dispatch(fetchExpenseGroups());
-    }
-  }, []);
+  }, [initWallet]);
 
   let addressElement;
   if (!connected)
