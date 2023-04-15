@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { store } from "../store";
+import { EXPENSE_LIST_ABI } from "../../config";
 
 const initialState = {
   loading: false,
@@ -58,7 +59,20 @@ const expenseGroupSlice = createSlice({
 
 export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGroups", async () => {
   const currentAccount = store.getState().user.currentAccount;
-  return await window.metamask.expenseListFactory.methods.getExpenseLists().call({ from: currentAccount });
+  let expenseLists = await window.metamask.expenseListFactory.methods.getExpenseLists().call({ from: currentAccount });
+  expenseLists = await expenseLists.map(async (address) => {
+    const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
+    const name = await contract.methods.getName().call();
+    window.contracts[address] = contract;
+    return {
+      name,
+      address,
+    };
+  });
+
+  expenseLists = await Promise.all(expenseLists);
+  console.log("LISTS", expenseLists);
+  return expenseLists;
 });
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;

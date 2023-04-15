@@ -11,6 +11,7 @@ export const initializeWallet = async () => {
   provider.on("accountsChanged", handleAccountsChanged);
   window.metamask = new Web3(window.ethereum);
   window.metamask.expenseListFactory = new window.metamask.eth.Contract(EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_FACTORY_ADDRESS);
+  window.contracts = {};
 
   if (!store.getState().util.metamaskConnected) {
     if (provider !== window.ethereum) {

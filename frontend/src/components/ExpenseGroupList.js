@@ -13,11 +13,11 @@ const ExpenseGroupList = (props) => {
         <Spinner />
       ) : (
         <ListGroup className="expense-group-list mb-4">
-          {props.listItems.map((item, index) => {
+          {props.listItems.map((expenseGroup, index) => {
             return (
               <ListGroup.Item key={index} className="p-0">
-                <Link to={"/lists/" + item} state={item} className="list-group-item list-group-item-action border-0" aria-current="true">
-                  {item}
+                <Link to={"/lists/" + expenseGroup} state={expenseGroup} className="list-group-item list-group-item-action border-0" aria-current="true">
+                  {expenseGroup.name}
                 </Link>
               </ListGroup.Item>
             );
