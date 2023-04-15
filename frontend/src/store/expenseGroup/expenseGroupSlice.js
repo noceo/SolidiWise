@@ -63,15 +63,19 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
   expenseLists = await expenseLists.map(async (address) => {
     const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
     const name = await contract.methods.getName().call();
+    const owner = await contract.methods.getOwner().call();
+    const notes = await contract.methods.getNotes().call();
     window.contracts[address] = contract;
     return {
       name,
       address,
+      owner,
+      notes,
     };
   });
 
   expenseLists = await Promise.all(expenseLists);
-  console.log("LISTS", expenseLists);
+  console.log("FETCHED_LISTS", expenseLists);
   return expenseLists;
 });
 

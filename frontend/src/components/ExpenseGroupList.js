@@ -16,77 +16,12 @@ const ExpenseGroupList = (props) => {
           {props.listItems.map((expenseGroup, index) => {
             return (
               <ListGroup.Item key={index} className="p-0">
-                <Link to={"/lists/" + expenseGroup} state={expenseGroup} className="list-group-item list-group-item-action border-0" aria-current="true">
+                <Link to={"/lists/" + expenseGroup.address} state={expenseGroup} className="list-group-item list-group-item-action border-0" aria-current="true">
                   {expenseGroup.name}
                 </Link>
               </ListGroup.Item>
             );
           })}
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
-          <ListGroup.Item className="p-0">
-            <a href="#" className="list-group-item list-group-item-action border-0" aria-current="true">
-              Test
-            </a>
-          </ListGroup.Item>
         </ListGroup>
       )}
     </>

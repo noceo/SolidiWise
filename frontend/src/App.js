@@ -54,20 +54,6 @@ const App = (props) => {
   const initWallet = async () => {
     try {
       await initializeWallet();
-      window.metamask.expenseListFactory.events
-        .ExpenseListCreated()
-        .on("connected", (message) => console.log("EXPENSELIST_CREATE_LISTENER_CONNECTED: ", message))
-        .on("data", (event) => {
-          const payload = event.returnValues;
-          console.log("EXPENSELIST_CREATE_EVENT: ", event);
-          const currentAccount = store.getState().user.currentAccount;
-          console.log("CONDITION", payload.owner, currentAccount, payload.participants);
-          if (payload.owner === currentAccount || payload.participants.includes(currentAccount)) {
-            console.log("ADD EXPENSE GROUP");
-            dispatch(addExpenseGroup(payload.expenseList));
-          }
-        })
-        .on("error", (error) => console.error("ERROR", error));
     } catch (e) {
       console.error(e);
     }
@@ -81,10 +67,6 @@ const App = (props) => {
     // }
   };
 
-  const loadExpenseGroups = async () => {
-    dispatch(fetchExpenseGroups());
-  };
-
   useEffect(() => {
     if (!connected && localStorage.getItem("metamask_is_connected")) {
       console.log("Connection established");
@@ -94,9 +76,9 @@ const App = (props) => {
     if (connected) {
       console.log("CONN", connected);
       loadBlockchainData();
-      loadExpenseGroups();
+      dispatch(fetchExpenseGroups());
     }
-  }, [connected]);
+  }, []);
 
   let addressElement;
   if (!connected)
@@ -116,7 +98,7 @@ const App = (props) => {
   console.log("EXPENSE_GROUPS", expenseGroups);
 
   return (
-    <div className="app container h-100">
+    <div className="app container">
       <h1>SolidiWise</h1>
       {addressElement}
       <ExpenseGroupList listItems={expenseGroups} />
