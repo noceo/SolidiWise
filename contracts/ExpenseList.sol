@@ -19,17 +19,12 @@ contract ExpenseList is AccessControlEnumerable {
   }
 
   // Setup variables and data structures
-  enum ExpenseMode {
-    PAID_FULL,
-    PAID_SPLIT
-  }
-
   struct Expense {
     uint256 id;
     string name;
+    uint256 amount;
     address spender;
     address[] debtors;
-    ExpenseMode mode;
     string notes;
   }
 
@@ -37,16 +32,16 @@ contract ExpenseList is AccessControlEnumerable {
   address private owner;
   mapping(uint256 => Expense) private expenses;
   uint256[] private expenseIndices;
+  mapping(uint256 => mapping(address => uint256)) debtAmounts;
   string private notes;
   uint256 uuidCounter = 0;
 
-  event LogNewExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
-  event LogUpdateExpense(uint256 id, string name, address spender, address[] debtors, ExpenseMode mode, string notes);
+  event LogNewExpense(uint256 id, string name, uint256 amount, address spender, address[] debtors, uint256[] debtAmounts, string notes);
+  event LogUpdateExpense(uint256 id, string name, uint256 amount, address spender, address[] debtors, uint256[] debtAmounts, string notes);
   event LogDeleteExpense(uint256 id);
 
   constructor(address _owner, string memory _name, address[] memory _participants) {
     _setupRole(DEFAULT_ADMIN_ROLE, _owner);
-    // _setRoleAdmin(PARTICIPANT_ROLE, DEFAULT_ADMIN_ROLE);
     
     owner = _owner;
     name = _name;
@@ -71,25 +66,34 @@ contract ExpenseList is AccessControlEnumerable {
     return (expenseIndices[expenses[_id].id] == _id);
   }
 
-  function addExpense(string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(uint256 index) {
+  function addExpense(string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(uint256 index) {
     require(addressesAreMembers(_spender, _debtors));
     uint256 id = uuidCounter;
     expenseIndices.push(id);
-    Expense memory expense = Expense(id, _name, _spender, _debtors, _mode, _notes);
+    
+    Expense memory expense = Expense(id, _name, _amount, _spender, _debtors, _notes);
     expenses[id] = expense;
-    uuidCounter++;
+    
+    for (uint i = 0; i < _debtors.length; i++) {
+      debtAmounts[id][_debtors[i]] = _debtAmounts[i];
+    }
 
-    emit LogNewExpense(id, _name, _spender, _debtors, _mode, _notes);
+    uuidCounter++;
+    emit LogNewExpense(id, _name, _amount, _spender, _debtors, _debtAmounts, _notes);
     return id;
   }
 
-  function updateExpense(uint256 _id, string memory _name, address _spender, address[] memory _debtors, ExpenseMode _mode, string memory _notes) public onlyMember returns(bool success) {
+  function updateExpense(uint256 _id, string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(bool success) {
     require(isExpense(_id), "Not a valid expense ID.");
     require(addressesAreMembers(_spender, _debtors));
-    Expense memory expense = Expense(_id, _name, _spender, _debtors, _mode, _notes);
+    Expense memory expense = Expense(_id, _name, _amount, _spender, _debtors, _notes);
     expenses[_id] = expense;
     
-    emit LogUpdateExpense(_id, _name, _spender, _debtors, _mode, _notes);
+    for (uint i = 0; i < _debtors.length; i++) {
+      debtAmounts[_id][_debtors[i]] = _debtAmounts[i];
+    }
+
+    emit LogUpdateExpense(_id, _name, _amount, _spender, _debtors, _debtAmounts, _notes);
     return true;
   }
 
@@ -101,7 +105,6 @@ contract ExpenseList is AccessControlEnumerable {
     expenses[lastElement].id = expenseToDelete;
     delete expenseIndices[expenseIndices.length-1];
     emit LogDeleteExpense(expenseToDelete);
-    emit LogUpdateExpense(expenseToDelete, expenses[lastElement].name, expenses[lastElement].spender, expenses[lastElement].debtors, expenses[lastElement].mode, expenses[lastElement].notes);
     return expenseToDelete;
   }
 
@@ -109,9 +112,15 @@ contract ExpenseList is AccessControlEnumerable {
     return expenseIndices.length;
   }
 
-  function getExpenseAtIndex(uint256 _id) public view returns(uint256 , string memory, address, address[] memory, ExpenseMode, string memory) {
-    uint256 index = expenseIndices[_id]; // just for readability
-    return (expenses[index].id, expenses[index].name, expenses[index].spender, expenses[index].debtors, expenses[index].mode, expenses[index].notes);
+  function getExpenseAtIndex(uint256 _id) public view returns(uint256 , string memory, uint256, address, address[] memory, uint256[] memory, string memory) {
+    Expense memory expense = expenses[expenseIndices[_id]]; // just for readability
+    uint256[] memory _debtAmounts = new uint256[](expense.debtors.length);
+
+    for (uint i = 0; i < expense.debtors.length; i++) {
+      _debtAmounts[i] = debtAmounts[expense.id][expense.debtors[i]];
+    }
+
+    return (expense.id, expense.name, expense.amount, expense.spender, expense.debtors, _debtAmounts, expense.notes);
   }
 
   function getName() public view returns(string memory) {
