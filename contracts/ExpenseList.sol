@@ -26,6 +26,7 @@ contract ExpenseList is AccessControlEnumerable {
     address spender;
     address[] debtors;
     string notes;
+    uint256 storeIndex;
   }
 
   string private name;
@@ -33,6 +34,7 @@ contract ExpenseList is AccessControlEnumerable {
   mapping(uint256 => Expense) private expenses;
   uint256[] private expenseIndices;
   mapping(uint256 => mapping(address => uint256)) debtAmounts;
+  mapping(address => mapping(address => uint256)) spenderToDebtors;
   string private notes;
   uint256 uuidCounter = 0;
 
@@ -63,19 +65,24 @@ contract ExpenseList is AccessControlEnumerable {
 
   function isExpense(uint256 _id) private view returns(bool isIndeed) {
     if(expenseIndices.length == 0) return false;
-    return (expenseIndices[expenses[_id].id] == _id);
+    return (expenseIndices[expenses[_id].storeIndex] == _id);
   }
 
   function addExpense(string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(uint256 index) {
     require(addressesAreMembers(_spender, _debtors));
+    for (uint i = 0; i < _debtAmounts.length; i++) {
+      require(_debtAmounts[i] > 0, "Debt amount has to be a positive number.");
+    }
+
     uint256 id = uuidCounter;
     expenseIndices.push(id);
     
-    Expense memory expense = Expense(id, _name, _amount, _spender, _debtors, _notes);
+    Expense memory expense = Expense(id, _name, _amount, _spender, _debtors, _notes, expenseIndices.length-1);
     expenses[id] = expense;
     
     for (uint i = 0; i < _debtors.length; i++) {
       debtAmounts[id][_debtors[i]] = _debtAmounts[i];
+      spenderToDebtors[_spender][_debtors[i]] += _debtAmounts[i];
     }
 
     uuidCounter++;
@@ -86,11 +93,19 @@ contract ExpenseList is AccessControlEnumerable {
   function updateExpense(uint256 _id, string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(bool success) {
     require(isExpense(_id), "Not a valid expense ID.");
     require(addressesAreMembers(_spender, _debtors));
-    Expense memory expense = Expense(_id, _name, _amount, _spender, _debtors, _notes);
+    Expense memory oldExpense = expenses[_id];
+    Expense memory expense = Expense(_id, _name, _amount, _spender, _debtors, _notes, oldExpense.storeIndex);
     expenses[_id] = expense;
     
+    // Revert old debt amounts as if expense never happend
+    for (uint i = 0; i < oldExpense.debtors.length; i++) {
+      spenderToDebtors[oldExpense.spender][oldExpense.debtors[i]] -= debtAmounts[_id][oldExpense.debtors[i]];
+    }
+    
+    // Update debt amounts with information of the updated expense
     for (uint i = 0; i < _debtors.length; i++) {
       debtAmounts[_id][_debtors[i]] = _debtAmounts[i];
+      spenderToDebtors[_spender][_debtors[i]] += _debtAmounts[i];
     }
 
     emit LogUpdateExpense(_id, _name, _amount, _spender, _debtors, _debtAmounts, _notes);
@@ -98,21 +113,28 @@ contract ExpenseList is AccessControlEnumerable {
   }
 
   function deleteExpense(uint256 _id) public onlyMember returns(uint256 id) {
-    require(isExpense(_id), "Not a valid expense ID."); 
-    uint256 expenseToDelete = expenses[_id].id;
-    uint256 lastElement = expenseIndices[expenseIndices.length-1];
-    expenseIndices[expenseToDelete] = lastElement;
-    expenses[lastElement].id = expenseToDelete;
-    delete expenseIndices[expenseIndices.length-1];
-    emit LogDeleteExpense(expenseToDelete);
-    return expenseToDelete;
+    require(isExpense(_id), "Not a valid expense ID.");
+    Expense memory expenseToDelete = expenses[_id];
+    uint256 expenseIndexToDelete = expenseToDelete.storeIndex;
+    uint256 lastElementId = expenseIndices[expenseIndices.length-1];
+    expenseIndices[expenseIndexToDelete] = lastElementId;
+    expenses[lastElementId].storeIndex = expenseIndexToDelete;
+    expenseIndices.pop();
+
+    for (uint i = 0; i < expenseToDelete.debtors.length; i++) {
+      spenderToDebtors[expenseToDelete.spender][expenseToDelete.debtors[i]] -= debtAmounts[_id][expenseToDelete.debtors[i]];
+    }
+
+    delete expenses[_id];
+    emit LogDeleteExpense(_id);
+    return _id;
   }
 
-  function getExpenseCount() public view returns(uint256 count) {
+  function getExpenseCount() public onlyMember view returns(uint256 count) {
     return expenseIndices.length;
   }
 
-  function getExpenseAtIndex(uint256 _id) public view returns(uint256 , string memory, uint256, address, address[] memory, uint256[] memory, string memory) {
+  function getExpenseAtIndex(uint256 _id) public onlyMember view returns(uint256 , string memory, uint256, address, address[] memory, uint256[] memory, string memory) {
     Expense memory expense = expenses[expenseIndices[_id]]; // just for readability
     uint256[] memory _debtAmounts = new uint256[](expense.debtors.length);
 
@@ -121,6 +143,38 @@ contract ExpenseList is AccessControlEnumerable {
     }
 
     return (expense.id, expense.name, expense.amount, expense.spender, expense.debtors, _debtAmounts, expense.notes);
+  }
+
+  // function getDebtAmount() public onlyMember view returns(address[] memory, uint256[] memory) {
+  //   address debtor = msg.sender;
+  //   address owner = getOwner();
+  //   uint participantsCount = getRoleMemberCount(PARTICIPANT_ROLE);
+  //   address[] memory participants = new address[](participantsCount);
+
+  //   for (uint i = 0; i < getRoleMemberCount(PARTICIPANT_ROLE); i++) {
+  //     participants[i] = getRoleMember(PARTICIPANT_ROLE, i);
+  //   }
+
+  //   address[] memory lenders = new address[](1 + participants.length);
+
+  //   for (uint i = 0; i < expenseIndices.length; i++) {
+  //     uint256 index = expenseIndices[i];
+
+  //     // if the requesting address is the spender of the expense 
+  //     if (expenses[index].spender == msg.sender) {
+
+  //     }
+  //     debtAmounts[index][]
+  //   }
+
+  //   for (uint i = 0; i < participants.length; i++) {
+
+  //   }
+
+  // }
+
+  function getDebtAmount(address spender, address debtor) public view returns(uint256) {
+    return spenderToDebtors[spender][debtor];
   }
 
   function getName() public view returns(string memory) {
