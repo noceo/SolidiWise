@@ -2,7 +2,7 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import { store } from "./store/store";
 import { setCurrentAccount } from "./store/user/userSlice";
 import { setMetamaskInstalled, setMetamaskConnected } from "./store/util/utilSlice";
-import { EXPENSE_LIST_FACTORY_ADDRESS, EXPENSE_LIST_FACTORY_ABI } from "./config.js";
+import { EXPENSE_LIST_FACTORY_ADDRESS, EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_ABI } from "./config.js";
 import Web3 from "web3";
 import { fetchExpenseGroups, addExpenseGroup } from "./store/expenseGroup/expenseGroupSlice";
 
@@ -15,13 +15,33 @@ export const initializeWallet = async () => {
   window.metamask.expenseListFactory.events
     .ExpenseListCreated()
     .on("connected", (message) => console.log("EXPENSELIST_CREATE_LISTENER_CONNECTED: ", message))
-    .on("data", (event) => {
+    .on("data", async (event) => {
       const payload = event.returnValues;
       console.log("EXPENSELIST_CREATE_EVENT: ", event);
       const currentAccount = store.getState().user.currentAccount;
-      if (payload.owner === currentAccount || payload.participants.includes(currentAccount)) {
+
+      const address = payload.expenseList;
+      const owner = payload.owner.toLowerCase();
+      const participants = payload.participants.map((address) => address.toLowerCase());
+      if (owner === currentAccount || participants.includes(currentAccount)) {
         console.log("ADD EXPENSE GROUP");
-        store.dispatch(addExpenseGroup(payload.expenseList));
+        const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
+        window.contracts[address] = contract;
+        const name = await contract.methods.getName().call();
+        let owner = await contract.methods.getOwner().call();
+        owner = owner.toLowerCase();
+        let participants = await contract.methods.getParticipants().call();
+        participants = participants.map((address) => address.toLowerCase());
+
+        const newExpenseGroup = {
+          name,
+          address,
+          owner,
+          participants,
+          notes: "",
+          expenses: [],
+        };
+        store.dispatch(addExpenseGroup(newExpenseGroup));
       }
     })
     .on("error", (error) => console.error("ERROR", error));
