@@ -79,11 +79,12 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
   expenseLists = await expenseLists.map(async (address) => {
     const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
     const name = await contract.methods.getName().call();
-    const owner = await contract.methods.getOwner().call();
-    const participants = await contract.methods.getParticipants().call();
+    let owner = await contract.methods.getOwner().call();
+    owner = owner.toLowerCase();
+    let participants = await contract.methods.getParticipants().call();
+    participants = participants.map((address) => address.toLowerCase());
     const notes = await contract.methods.getNotes().call();
     window.contracts[address] = contract;
-    console.log(contract.events);
     registerExpenseListEventHandlers(contract);
 
     return {
@@ -118,10 +119,11 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
     return {
       id: expense[0],
       name: expense[1],
-      spender: expense[2],
-      debtors: expense[3],
-      mode: expense[4],
-      notes: expense[5],
+      amount: Number(expense[2]),
+      spender: expense[3].toLowerCase(),
+      debtors: expense[4].map((address) => address.toLowerCase()),
+      debtAmounts: expense[5].map((amount) => Number(amount)),
+      notes: expense[6],
     };
   });
 

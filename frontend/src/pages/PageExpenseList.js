@@ -101,7 +101,7 @@ const PageExpenseList = (props) => {
         <>
           <h2>{expenseGroup.name}</h2>
           <p>Owner of this list: {expenseGroup.owner}</p>
-          <ExpenseList expenses={expenseGroup.expenses} loading={loading} />
+          <ExpenseList expenses={expenseGroup.expenses} loading={loading} user={user} />
           <Notes notes={expenseGroup.notes} />
           <Button onClick={() => handleShow("Create new Expense", "Create")}>Create new Expense</Button>
           <AddExpenseModal expenseGroup={expenseGroup} show={show} headerText={modalHeader} submitText={modalSubmit} onClose={handleClose} onSubmit={handleCreateNewExpense} />
