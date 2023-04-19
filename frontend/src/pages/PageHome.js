@@ -51,7 +51,7 @@ const PageHome = () => {
     } catch (e) {
       console.error(e);
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (!connected && localStorage.getItem("metamask_is_connected")) {
