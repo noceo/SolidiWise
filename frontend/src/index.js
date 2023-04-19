@@ -9,13 +9,14 @@ import reportWebVitals from "./reportWebVitals";
 import "bootstrap/dist/css/bootstrap.css";
 
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import PageNotFound from "./pages/PageNotFound";
+import PageHome from "./pages/PageHome";
 import PageExpenseList from "./pages/PageExpenseList";
+import PageNotFound from "./pages/PageNotFound";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <PageHome />,
   },
   {
     path: "/lists/:id",
@@ -30,7 +31,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <App router={router} />
   </Provider>
 );
 

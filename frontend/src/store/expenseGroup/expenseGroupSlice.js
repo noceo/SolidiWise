@@ -60,7 +60,9 @@ const expenseGroupSlice = createSlice({
     builder.addCase(fetchExpensesForGroup.fulfilled, (state, action) => {
       state.loading = false;
       const groupIndex = state.data.findIndex((group) => group.address === action.meta.arg);
-      state.data[groupIndex].expenses = action.payload;
+      const newObject = { ...state.data[groupIndex], expenses: action.payload };
+      console.log("NEW_OBJECT", newObject);
+      state.data[groupIndex] = { ...state.data[groupIndex], expenses: action.payload };
       state.error = "";
     });
     builder.addCase(fetchExpensesForGroup.rejected, (state, action) => {
@@ -78,12 +80,17 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
     const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
     const name = await contract.methods.getName().call();
     const owner = await contract.methods.getOwner().call();
+    const participants = await contract.methods.getParticipants().call();
     const notes = await contract.methods.getNotes().call();
     window.contracts[address] = contract;
+    console.log(contract.events);
+    registerExpenseListEventHandlers(contract);
+
     return {
       name,
       address,
       owner,
+      participants,
       notes,
     };
   });
@@ -122,6 +129,24 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
   console.log("FETCHED_EXPENSES", expenses);
   return expenses;
 });
+
+const registerExpenseListEventHandlers = (contract) => {
+  contract.events
+    .LogNewExpense()
+    .on("connected", (message) => console.log("ADD_EXPENSE_HANDLER_CONNECTED: ", message))
+    .on("data", (event) => {
+      console.log("EXPENSE_ADDED", event);
+      // const payload = event.returnValues;
+      // console.log("EXPENSELIST_CREATE_EVENT: ", event);
+      // const currentAccount = store.getState().user.currentAccount;
+      // console.log("CONDITION", payload.owner, currentAccount, payload.participants);
+      // if (payload.owner === currentAccount || payload.participants.includes(currentAccount)) {
+      //   console.log("ADD EXPENSE GROUP");
+      //   store.dispatch(addExpenseGroup(payload.expenseList));
+      // }
+    })
+    .on("error", (error) => console.error("ADD_EXPENSE_ERROR", error));
+};
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;
 export const { addExpenseGroup, removeExpenseGroup } = expenseGroupSlice.actions;

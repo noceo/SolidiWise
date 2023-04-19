@@ -15,11 +15,8 @@ const utilSlice = createSlice({
     setMetamaskConnected: (state, action) => {
       state.metamaskConnected = action.payload;
     },
-    setAccounts: (state, action) => {
-      state.accounts = action.payload;
-    },
   },
 });
 
 export const utilReducer = utilSlice.reducer;
-export const { setMetamaskInstalled, setMetamaskConnected, setAccounts } = utilSlice.actions;
+export const { setMetamaskInstalled, setMetamaskConnected, setModal } = utilSlice.actions;

@@ -55,7 +55,7 @@ const handleAccountsChanged = async (accounts) => {
 };
 
 export const connect = async () => {
-  const accounts = await window.metamask.eth.getAccounts();
+  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
   await handleAccountsChanged(accounts);
   console.log(store.getState().expenseGroup.data);
   store.dispatch(setMetamaskInstalled(true));

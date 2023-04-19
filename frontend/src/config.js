@@ -1,4 +1,4 @@
-export const EXPENSE_LIST_FACTORY_ADDRESS = "0xa5AfAC120C68D475D295d69aa0828C89726f9a36";
+export const EXPENSE_LIST_FACTORY_ADDRESS = "0x908b200048C20aDf584C1C76C265c6221f6C0742";
 
 export const EXPENSE_LIST_FACTORY_ABI = [
   {
@@ -168,6 +168,12 @@ export const EXPENSE_LIST_ABI = [
       },
       {
         indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
         internalType: "address",
         name: "spender",
         type: "address",
@@ -180,9 +186,9 @@ export const EXPENSE_LIST_ABI = [
       },
       {
         indexed: false,
-        internalType: "enum ExpenseList.ExpenseMode",
-        name: "mode",
-        type: "uint8",
+        internalType: "uint256[]",
+        name: "debtAmounts",
+        type: "uint256[]",
       },
       {
         indexed: false,
@@ -211,6 +217,12 @@ export const EXPENSE_LIST_ABI = [
       },
       {
         indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
         internalType: "address",
         name: "spender",
         type: "address",
@@ -223,9 +235,9 @@ export const EXPENSE_LIST_ABI = [
       },
       {
         indexed: false,
-        internalType: "enum ExpenseList.ExpenseMode",
-        name: "mode",
-        type: "uint8",
+        internalType: "uint256[]",
+        name: "debtAmounts",
+        type: "uint256[]",
       },
       {
         indexed: false,
@@ -505,6 +517,11 @@ export const EXPENSE_LIST_ABI = [
         type: "string",
       },
       {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+      {
         internalType: "address",
         name: "_spender",
         type: "address",
@@ -515,9 +532,9 @@ export const EXPENSE_LIST_ABI = [
         type: "address[]",
       },
       {
-        internalType: "enum ExpenseList.ExpenseMode",
-        name: "_mode",
-        type: "uint8",
+        internalType: "uint256[]",
+        name: "_debtAmounts",
+        type: "uint256[]",
       },
       {
         internalType: "string",
@@ -549,6 +566,11 @@ export const EXPENSE_LIST_ABI = [
         type: "string",
       },
       {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+      {
         internalType: "address",
         name: "_spender",
         type: "address",
@@ -559,9 +581,9 @@ export const EXPENSE_LIST_ABI = [
         type: "address[]",
       },
       {
-        internalType: "enum ExpenseList.ExpenseMode",
-        name: "_mode",
-        type: "uint8",
+        internalType: "uint256[]",
+        name: "_debtAmounts",
+        type: "uint256[]",
       },
       {
         internalType: "string",
@@ -633,6 +655,11 @@ export const EXPENSE_LIST_ABI = [
         type: "string",
       },
       {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
         internalType: "address",
         name: "",
         type: "address",
@@ -643,9 +670,9 @@ export const EXPENSE_LIST_ABI = [
         type: "address[]",
       },
       {
-        internalType: "enum ExpenseList.ExpenseMode",
+        internalType: "uint256[]",
         name: "",
-        type: "uint8",
+        type: "uint256[]",
       },
       {
         internalType: "string",
