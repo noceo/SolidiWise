@@ -42,10 +42,8 @@ const PageExpenseList = (props) => {
     const spender = data.get("spender");
     let debtors = data.getAll("debtors");
     const spenderIsDebtor = debtors.indexOf(spender) !== -1;
-    console.log(spenderIsDebtor);
     let debtAmounts;
     if (spenderIsDebtor) {
-      console.log("IS_DERBTOR");
       debtAmounts = new Array(debtors.length).fill(amount / debtors.length);
     } else {
       debtAmounts = new Array(debtors.length + 1).fill(amount / debtors.length);
@@ -74,22 +72,18 @@ const PageExpenseList = (props) => {
       } catch (error) {
         console.error(error);
       }
-      console.log("FINISH");
     };
 
-    console.log("USE_EFFECT", expenseGroup);
     if (!connected) {
       initWallet().then(() => {
         const expenseGroup = store.getState().expenseGroup.data.find((group) => group.address === id);
         if (expenseGroup) {
-          console.log("AFTER_INIT", expenseGroup);
           dispatch(fetchExpensesForGroup(expenseGroup.address));
         }
       });
     } else {
       const expenseGroup = store.getState().expenseGroup.data.find((group) => group.address === id);
       if (expenseGroup) {
-        console.log("AFTER_INIT", expenseGroup);
         dispatch(fetchExpensesForGroup(expenseGroup.address));
       }
     }

@@ -11,20 +11,17 @@ const FormCreateExpenseList = (props) => {
     let data = [...participantFields];
     data[index] = event.target.value;
     setParticipantFields(data);
-    console.log(data);
   };
 
   const addParticipantField = () => {
     let data = [...participantFields, ""];
     setParticipantFields(data);
-    console.log(data);
   };
 
   const removeParticipantField = (index) => {
     let data = [...participantFields];
     data.splice(index, 1);
     setParticipantFields(data);
-    console.log(data);
   };
 
   return (

@@ -60,8 +60,6 @@ const expenseGroupSlice = createSlice({
     builder.addCase(fetchExpensesForGroup.fulfilled, (state, action) => {
       state.loading = false;
       const groupIndex = state.data.findIndex((group) => group.address === action.meta.arg);
-      const newObject = { ...state.data[groupIndex], expenses: action.payload };
-      console.log("NEW_OBJECT", newObject);
       state.data[groupIndex] = { ...state.data[groupIndex], expenses: action.payload };
       state.error = "";
     });
@@ -115,7 +113,6 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
 
   let expenses = [...Array(expenseCount).keys()].map(async (index) => {
     const expense = await contract.methods.getExpenseAtIndex(index).call();
-    // console.log(expense);
     return {
       id: expense[0],
       name: expense[1],

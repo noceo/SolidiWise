@@ -19,7 +19,6 @@ export const initializeWallet = async () => {
       const payload = event.returnValues;
       console.log("EXPENSELIST_CREATE_EVENT: ", event);
       const currentAccount = store.getState().user.currentAccount;
-      console.log("CONDITION", payload.owner, currentAccount, payload.participants);
       if (payload.owner === currentAccount || payload.participants.includes(currentAccount)) {
         console.log("ADD EXPENSE GROUP");
         store.dispatch(addExpenseGroup(payload.expenseList));
@@ -56,12 +55,9 @@ const handleAccountsChanged = async (accounts) => {
 
 export const connect = async () => {
   const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-  console.log(accounts);
   await handleAccountsChanged(accounts);
-  console.log(store.getState().expenseGroup.data);
   store.dispatch(setMetamaskInstalled(true));
   store.dispatch(setMetamaskConnected(true));
-  console.log("DISPATCHED_CONNECTED", store.getState().util.metamaskConnected);
 
   if (localStorage.getItem("metamask_is_connected") === null || localStorage.getItem("metamask_is_connected") === false) {
     localStorage.setItem("metamask_is_connected", true);

@@ -6,7 +6,6 @@ import Spinner from "./Spinner";
 
 const ExpenseGroupList = (props) => {
   const loading = useSelector((state) => state.expenseGroup.loading);
-  console.log("CHILD", props);
   return (
     <>
       {loading ? (

@@ -27,7 +27,6 @@ const PageHome = () => {
   };
 
   const handleCreateNewList = async (event) => {
-    console.log(event);
     event.preventDefault();
     let data = new FormData(event.target.form);
     const listName = data.get("name");
@@ -75,8 +74,6 @@ const PageHome = () => {
       </p>
     );
   else addressElement = <p className="mb-5">Your account: {user.currentAccount}</p>;
-
-  console.log("EXPENSE_GROUPS", expenseGroups);
 
   return (
     <div className="app container">

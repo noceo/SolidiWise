@@ -4,7 +4,6 @@ import ExpenseListItem from "./ExpenseListItem";
 import Spinner from "./Spinner";
 
 const ExpenseList = (props) => {
-  console.log("expenses", props.expenses);
   let expenses = [];
   let USDollar = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -15,7 +14,6 @@ const ExpenseList = (props) => {
       let borrowLentInfo;
       let debtorIndexForUser = expense.debtors.indexOf(props.user.currentAccount);
 
-      console.log(props.user.currentAccount, expense.spender);
       if (props.user.currentAccount === expense.spender) {
         let lentAmount = expense.debtAmounts.reduce((partialSum, amount) => partialSum + amount, 0);
         lentAmount -= expense.debtAmounts[debtorIndexForUser];
@@ -24,7 +22,6 @@ const ExpenseList = (props) => {
         const borrowAmount = expense.debtAmounts[debtorIndexForUser];
         borrowLentInfo = borrowAmount > 0 && <p className="text-danger">you borrowed {USDollar.format(borrowAmount / 100)}</p>;
       }
-      console.log(borrowLentInfo);
       return <ExpenseListItem key={index} name={expense.name} amount={expense.amount} spender={expense.spender} borrowLentInfo={borrowLentInfo} />;
     });
   } else {
