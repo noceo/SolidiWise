@@ -39,6 +39,17 @@ const expenseGroupSlice = createSlice({
     removeExpenseGroup: (state, action) => {
       console.log("REMOVED EXPENSE GROUP");
     },
+    addExpense: (state, action) => {
+      const groupIndex = state.data.findIndex((group) => group.address === action.payload.groupId);
+      console.log(groupIndex, action.payload.groupId);
+      if (groupIndex !== -1) {
+        let data = [...state.data];
+        let expenses = [...state.data[groupIndex].expenses];
+        expenses = [...expenses, action.payload.expense];
+        data[groupIndex].expenses = expenses;
+        state.data = data;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchExpenseGroups.pending, (state) => {
@@ -83,7 +94,7 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
     participants = participants.map((address) => address.toLowerCase());
     const notes = await contract.methods.getNotes().call();
     window.contracts[address] = contract;
-    registerExpenseListEventHandlers(contract);
+    registerExpenseListEventHandlers(address, contract);
 
     return {
       name,
@@ -91,6 +102,7 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
       owner,
       participants,
       notes,
+      expenses: [],
     };
   });
 
@@ -129,23 +141,27 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
   return expenses;
 });
 
-const registerExpenseListEventHandlers = (contract) => {
+const registerExpenseListEventHandlers = (groupId, contract) => {
   contract.events
     .LogNewExpense()
     .on("connected", (message) => console.log("ADD_EXPENSE_HANDLER_CONNECTED: ", message))
     .on("data", (event) => {
       console.log("EXPENSE_ADDED", event);
-      // const payload = event.returnValues;
-      // console.log("EXPENSELIST_CREATE_EVENT: ", event);
-      // const currentAccount = store.getState().user.currentAccount;
-      // console.log("CONDITION", payload.owner, currentAccount, payload.participants);
-      // if (payload.owner === currentAccount || payload.participants.includes(currentAccount)) {
-      //   console.log("ADD EXPENSE GROUP");
-      //   store.dispatch(addExpenseGroup(payload.expenseList));
-      // }
+      const payload = event.returnValues;
+      console.log("ADD EXPENSE AFTER EVENT");
+      const newExpense = {
+        id: payload.id,
+        name: payload.name,
+        amount: Number(payload.amount),
+        spender: payload.spender.toLowerCase(),
+        debtors: payload.debtors.map((address) => address.toLowerCase()),
+        debtAmounts: payload.debtAmounts.map((amount) => Number(amount)),
+        notes: payload.notes,
+      };
+      store.dispatch(addExpense({ groupId: groupId, expense: newExpense }));
     })
     .on("error", (error) => console.error("ADD_EXPENSE_ERROR", error));
 };
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;
-export const { addExpenseGroup, removeExpenseGroup } = expenseGroupSlice.actions;
+export const { addExpenseGroup, removeExpenseGroup, addExpense } = expenseGroupSlice.actions;
