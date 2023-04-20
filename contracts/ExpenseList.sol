@@ -63,6 +63,14 @@ contract ExpenseList is AccessControlEnumerable {
     return true;
   }
 
+  function debtorsAndDebtAmountsAreValid(address[] memory _debtors, uint256[] memory _debtAmounts) private view returns(bool) {
+    require(_debtors.length == _debtAmounts.length, "Debtor array and debtAmounts array must have the same length.");
+    for (uint i = 0; i < _debtAmounts.length; i++) {
+      require(_debtAmounts[i] >= 0, "Debt amount has to be a positive number.");
+    }
+    return true;
+  }
+
   function isExpense(uint256 _id) private view returns(bool isIndeed) {
     if(expenseIndices.length == 0) return false;
     return (expenseIndices[expenses[_id].storeIndex] == _id);
@@ -70,9 +78,7 @@ contract ExpenseList is AccessControlEnumerable {
 
   function addExpense(string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(uint256 index) {
     require(addressesAreMembers(_spender, _debtors));
-    for (uint i = 0; i < _debtAmounts.length; i++) {
-      require(_debtAmounts[i] > 0, "Debt amount has to be a positive number.");
-    }
+    require(debtorsAndDebtAmountsAreValid(_debtors, _debtAmounts));
 
     uint256 id = uuidCounter;
     expenseIndices.push(id);
@@ -93,6 +99,8 @@ contract ExpenseList is AccessControlEnumerable {
   function updateExpense(uint256 _id, string memory _name, uint256 _amount, address _spender, address[] memory _debtors, uint256[] memory _debtAmounts, string memory _notes) public onlyMember returns(bool success) {
     require(isExpense(_id), "Not a valid expense ID.");
     require(addressesAreMembers(_spender, _debtors));
+    require(debtorsAndDebtAmountsAreValid(_debtors, _debtAmounts));
+
     Expense memory oldExpense = expenses[_id];
     Expense memory expense = Expense(_id, _name, _amount, _spender, _debtors, _notes, oldExpense.storeIndex);
     expenses[_id] = expense;
@@ -144,34 +152,6 @@ contract ExpenseList is AccessControlEnumerable {
 
     return (expense.id, expense.name, expense.amount, expense.spender, expense.debtors, _debtAmounts, expense.notes);
   }
-
-  // function getDebtAmount() public onlyMember view returns(address[] memory, uint256[] memory) {
-  //   address debtor = msg.sender;
-  //   address owner = getOwner();
-  //   uint participantsCount = getRoleMemberCount(PARTICIPANT_ROLE);
-  //   address[] memory participants = new address[](participantsCount);
-
-  //   for (uint i = 0; i < getRoleMemberCount(PARTICIPANT_ROLE); i++) {
-  //     participants[i] = getRoleMember(PARTICIPANT_ROLE, i);
-  //   }
-
-  //   address[] memory lenders = new address[](1 + participants.length);
-
-  //   for (uint i = 0; i < expenseIndices.length; i++) {
-  //     uint256 index = expenseIndices[i];
-
-  //     // if the requesting address is the spender of the expense 
-  //     if (expenses[index].spender == msg.sender) {
-
-  //     }
-  //     debtAmounts[index][]
-  //   }
-
-  //   for (uint i = 0; i < participants.length; i++) {
-
-  //   }
-
-  // }
 
   function getDebtAmount(address spender, address debtor) public view returns(uint256) {
     return spenderToDebtors[spender][debtor];
