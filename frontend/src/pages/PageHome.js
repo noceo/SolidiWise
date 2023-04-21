@@ -13,6 +13,7 @@ import { store } from "../store/store";
 const PageHome = () => {
   const user = useSelector((state) => state.user);
   const expenseGroups = useSelector((state) => state.expenseGroup.data);
+  console.log(expenseGroups);
   const connected = useSelector((state) => state.util.metamaskConnected);
   const [show, setShow] = useState(false);
   const [modalHeader, setModalHeader] = useState("");

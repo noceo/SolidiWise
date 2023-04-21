@@ -53,10 +53,12 @@ const expenseGroupSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchExpenseGroups.pending, (state) => {
+      console.log("FETCHING PENDING");
       state.loading = true;
     });
     builder.addCase(fetchExpenseGroups.fulfilled, (state, action) => {
       state.loading = false;
+      console.log("FETCHING FULFILLED");
       state.data = action.payload;
       state.error = "";
     });
@@ -83,16 +85,20 @@ const expenseGroupSlice = createSlice({
 });
 
 export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGroups", async () => {
+  console.log("FETCHING");
   const currentAccount = store.getState().user.currentAccount;
-  let expenseLists = await window.metamask.expenseListFactory.methods.getExpenseLists().call({ from: currentAccount });
-  expenseLists = await expenseLists.map(async (address) => {
+  const tx_options = {
+    from: currentAccount,
+  };
+  let expenseLists = await window.metamask.expenseListFactory.methods.getExpenseLists().call(tx_options);
+  expenseLists = expenseLists.map(async (address) => {
     const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
-    const name = await contract.methods.getName().call();
-    let owner = await contract.methods.getOwner().call();
+    const name = await contract.methods.getName().call(tx_options);
+    let owner = await contract.methods.getOwner().call(tx_options);
     owner = owner.toLowerCase();
-    let participants = await contract.methods.getParticipants().call();
+    let participants = await contract.methods.getParticipants().call(tx_options);
     participants = participants.map((address) => address.toLowerCase());
-    const notes = await contract.methods.getNotes().call();
+    const notes = await contract.methods.getNotes().call(tx_options);
     window.contracts[address] = contract;
     registerExpenseListEventHandlers(address, contract);
 
@@ -113,9 +119,13 @@ export const fetchExpenseGroups = createAsyncThunk("expenseGroup/fetchExpenseGro
 
 export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpensesForGroup", async (address) => {
   const contract = window.contracts[address];
+  const currentAccount = store.getState().user.currentAccount;
+  const tx_options = {
+    from: currentAccount,
+  };
   let expenseCount = 0;
   try {
-    expenseCount = await contract.methods.getExpenseCount().call();
+    expenseCount = await contract.methods.getExpenseCount().call(tx_options);
     expenseCount = Number(expenseCount);
   } catch (error) {
     throw error;
@@ -124,7 +134,7 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
   if (expenseCount === 0) return [];
 
   let expenses = [...Array(expenseCount).keys()].map(async (index) => {
-    const expense = await contract.methods.getExpenseAtIndex(index).call();
+    const expense = await contract.methods.getExpenseAtIndex(index).call(tx_options);
     return {
       id: expense[0],
       name: expense[1],

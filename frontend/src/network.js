@@ -19,6 +19,9 @@ export const initializeWallet = async () => {
       const payload = event.returnValues;
       console.log("EXPENSELIST_CREATE_EVENT: ", event);
       const currentAccount = store.getState().user.currentAccount;
+      const tx_options = {
+        from: currentAccount,
+      };
 
       const address = payload.expenseList;
       const owner = payload.owner.toLowerCase();
@@ -27,10 +30,10 @@ export const initializeWallet = async () => {
         console.log("ADD EXPENSE GROUP");
         const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
         window.contracts[address] = contract;
-        const name = await contract.methods.getName().call();
-        let owner = await contract.methods.getOwner().call();
+        const name = await contract.methods.getName().call(tx_options);
+        let owner = await contract.methods.getOwner().call(tx_options);
         owner = owner.toLowerCase();
-        let participants = await contract.methods.getParticipants().call();
+        let participants = await contract.methods.getParticipants().call(tx_options);
         participants = participants.map((address) => address.toLowerCase());
 
         const newExpenseGroup = {

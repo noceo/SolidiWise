@@ -1,4 +1,4 @@
-export const EXPENSE_LIST_FACTORY_ADDRESS = "0x908b200048C20aDf584C1C76C265c6221f6C0742";
+export const EXPENSE_LIST_FACTORY_ADDRESS = "0x7C9Ca652a99A008ec6f4eDBd65676a43cB37CC7c";
 
 export const EXPENSE_LIST_FACTORY_ABI = [
   {
@@ -678,6 +678,30 @@ export const EXPENSE_LIST_ABI = [
         internalType: "string",
         name: "",
         type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "debtor",
+        type: "address",
+      },
+    ],
+    name: "getDebtAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
