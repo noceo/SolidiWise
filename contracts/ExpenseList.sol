@@ -41,6 +41,7 @@ contract ExpenseList is AccessControlEnumerable {
   event LogNewExpense(uint256 id, string name, uint256 amount, address spender, address[] debtors, uint256[] debtAmounts, string notes);
   event LogUpdateExpense(uint256 id, string name, uint256 amount, address spender, address[] debtors, uint256[] debtAmounts, string notes);
   event LogDeleteExpense(uint256 id);
+  event LogReset();
 
   constructor(address _owner, string memory _name, address[] memory _participants) {
     _setupRole(DEFAULT_ADMIN_ROLE, _owner);
@@ -63,7 +64,7 @@ contract ExpenseList is AccessControlEnumerable {
     return true;
   }
 
-  function debtorsAndDebtAmountsAreValid(address[] memory _debtors, uint256[] memory _debtAmounts) private view returns(bool) {
+  function debtorsAndDebtAmountsAreValid(address[] memory _debtors, uint256[] memory _debtAmounts) private pure returns(bool) {
     require(_debtors.length == _debtAmounts.length, "Debtor array and debtAmounts array must have the same length.");
     for (uint i = 0; i < _debtAmounts.length; i++) {
       require(_debtAmounts[i] >= 0, "Debt amount has to be a positive number.");
@@ -131,11 +132,19 @@ contract ExpenseList is AccessControlEnumerable {
 
     for (uint i = 0; i < expenseToDelete.debtors.length; i++) {
       spenderToDebtors[expenseToDelete.spender][expenseToDelete.debtors[i]] -= debtAmounts[_id][expenseToDelete.debtors[i]];
+      debtAmounts[_id][expenseToDelete.debtors[i]] = 0;
     }
 
     delete expenses[_id];
     emit LogDeleteExpense(_id);
     return _id;
+  }
+
+  function reset() public onlyMember {
+    for (uint i = 0; i < expenseIndices.length; i++) {
+      deleteExpense(expenseIndices[i]);
+    }
+    emit LogReset();
   }
 
   function getExpenseCount() public onlyMember view returns(uint256 count) {
