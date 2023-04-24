@@ -217,6 +217,7 @@ const registerExpenseListEventHandlers = (groupId, contract) => {
         notes: payload.notes,
       };
       store.dispatch(addExpense({ groupId: groupId, expense: newExpense }));
+      store.dispatch(fetchDebtBalancesForGroup(groupId));
     })
     .on("error", (error) => console.error("ADD_EXPENSE_ERROR", error));
 };
