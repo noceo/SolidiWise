@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import ExpenseList from "../components/ExpenseList";
+import DebtList from "../components/DebtList";
 import { selectExpenseGroupById } from "../store/expenseGroup/expenseGroupSelectors";
-import { fetchExpensesForGroup } from "../store/expenseGroup/expenseGroupSlice";
+import { fetchExpensesForGroup, fetchDebtBalancesForGroup } from "../store/expenseGroup/expenseGroupSlice";
 import Spinner from "../components/Spinner";
 import { initializeWallet } from "../network";
 import Notes from "../components/Notes";
@@ -16,6 +17,7 @@ const PageExpenseList = (props) => {
   const user = useSelector((state) => state.user);
   const connected = useSelector((state) => state.util.metamaskConnected);
   const expenseGroup = useSelector((state) => selectExpenseGroupById(state, id));
+  const debtBalances = useSelector((state) => state.expenseGroup.debtBalances);
   const loading = useSelector((state) => state.expenseGroup.loading);
   const dispatch = useDispatch();
   const [show, setShow] = useState(false);
@@ -79,6 +81,7 @@ const PageExpenseList = (props) => {
         const expenseGroup = store.getState().expenseGroup.data.find((group) => group.address === id);
         if (expenseGroup) {
           dispatch(fetchExpensesForGroup(expenseGroup.address));
+          dispatch(fetchDebtBalancesForGroup(expenseGroup.address));
         }
       });
     } else {
@@ -95,6 +98,7 @@ const PageExpenseList = (props) => {
         <>
           <h2>{expenseGroup.name}</h2>
           <p>Owner of this list: {expenseGroup.owner}</p>
+          <DebtList debtBalances={debtBalances} />
           <ExpenseList expenses={expenseGroup.expenses} loading={loading} user={user} />
           <Notes notes={expenseGroup.notes} />
           <Button onClick={() => handleShow("Create new Expense", "Create")}>Create new Expense</Button>

@@ -5,6 +5,7 @@ import { EXPENSE_LIST_ABI } from "../../config";
 const initialState = {
   loading: false,
   data: [],
+  debtBalances: [],
   error: "",
   // {
   //   id: 1,
@@ -67,6 +68,7 @@ const expenseGroupSlice = createSlice({
       state.data = "";
       state.error = action.error.message;
     });
+
     builder.addCase(fetchExpensesForGroup.pending, (state) => {
       state.loading = true;
     });
@@ -79,6 +81,20 @@ const expenseGroupSlice = createSlice({
     builder.addCase(fetchExpensesForGroup.rejected, (state, action) => {
       state.loading = false;
       state.data = "";
+      state.error = action.error.message;
+    });
+
+    builder.addCase(fetchDebtBalancesForGroup.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchDebtBalancesForGroup.fulfilled, (state, action) => {
+      state.loading = false;
+      state.debtBalances = action.payload;
+      state.error = "";
+    });
+    builder.addCase(fetchDebtBalancesForGroup.rejected, (state, action) => {
+      state.loading = false;
+      state.debtBalances = [];
       state.error = action.error.message;
     });
   },
@@ -149,6 +165,38 @@ export const fetchExpensesForGroup = createAsyncThunk("expenseGroup/fetchExpense
   expenses = Promise.all(expenses);
   console.log("FETCHED_EXPENSES", expenses);
   return expenses;
+});
+
+export const fetchDebtBalancesForGroup = createAsyncThunk("user/fetchDebtBalancesForGroup", async (address) => {
+  console.log("FETCH DEBT BALANCES");
+  const contract = window.contracts[address];
+  const currentAccount = store.getState().user.currentAccount;
+  const expenseGroups = store.getState().expenseGroup.data;
+  const groupIndex = expenseGroups.findIndex((group) => group.address === address);
+  console.log(groupIndex, address);
+  if (groupIndex !== -1) {
+    const owner = expenseGroups[groupIndex].owner;
+    const participants = expenseGroups[groupIndex].participants;
+    const otherGroupMembers = [...participants, owner].filter((address) => address !== currentAccount);
+    let debtBalances = otherGroupMembers.map(async (member) => {
+      const tx_options = {
+        from: currentAccount,
+      };
+
+      const lentAmount = await contract.methods.getDebtAmount(currentAccount, member).call(tx_options);
+      const debtAmount = await contract.methods.getDebtAmount(member, currentAccount).call(tx_options);
+      const amount = lentAmount - debtAmount;
+
+      return {
+        member,
+        amount,
+      };
+    });
+    debtBalances = Promise.all(debtBalances);
+    return debtBalances;
+  }
+
+  return [];
 });
 
 const registerExpenseListEventHandlers = (groupId, contract) => {
