@@ -153,11 +153,11 @@ contract ExpenseList is AccessControlEnumerable {
     return (expense.id, expense.name, expense.amount, expense.spender, expense.debtors, _debtAmounts, expense.notes);
   }
 
-  function getDebtAmount(address spender, address debtor) public view returns(uint256) {
+  function getDebtAmount(address spender, address debtor) public onlyMember view returns(uint256) {
     return spenderToDebtors[spender][debtor];
   }
 
-  function getName() public view returns(string memory) {
+  function getName() public onlyMember view returns(string memory) {
     return name;
   }
 
@@ -165,7 +165,7 @@ contract ExpenseList is AccessControlEnumerable {
     name = _name;
   }
 
-  function getOwner() public view returns(address) {
+  function getOwner() public onlyMember view returns(address) {
     return owner;
   }
 
@@ -176,7 +176,7 @@ contract ExpenseList is AccessControlEnumerable {
     owner = _owner; 
   }
 
-  function getParticipants() public view returns(address[] memory) {
+  function getParticipants() public onlyMember view returns(address[] memory) {
     uint participantsCount = getRoleMemberCount(PARTICIPANT_ROLE);
     address[] memory participants = new address[](participantsCount);
 
@@ -190,11 +190,11 @@ contract ExpenseList is AccessControlEnumerable {
     grantRole(PARTICIPANT_ROLE, account);
   }
 
-  function getNotes() public view returns(string memory) {
+  function getNotes() public onlyMember view returns(string memory) {
     return notes;
   }
 
-  function setNotes(string memory _notes) public {
+  function setNotes(string memory _notes) public onlyMember {
     notes = _notes;
   }
 }
