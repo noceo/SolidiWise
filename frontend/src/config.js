@@ -1,4 +1,4 @@
-export const EXPENSE_LIST_FACTORY_ADDRESS = "0x7C9Ca652a99A008ec6f4eDBd65676a43cB37CC7c";
+export const EXPENSE_LIST_FACTORY_ADDRESS = process.env["REACT_APP_DEV_CONTRACT_ADDRESS"]; //process.env["REACT_APP_LIVE_CONTRACT_ADDRESS"];
 
 export const EXPENSE_LIST_FACTORY_ABI = [
   {
@@ -198,6 +198,12 @@ export const EXPENSE_LIST_ABI = [
       },
     ],
     name: "LogNewExpense",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: "LogReset",
     type: "event",
   },
   {
@@ -618,6 +624,13 @@ export const EXPENSE_LIST_ABI = [
         type: "uint256",
       },
     ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "reset",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
