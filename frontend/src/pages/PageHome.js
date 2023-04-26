@@ -82,9 +82,11 @@ const PageHome = () => {
       {addressElement}
       <ExpenseGroupList listItems={expenseGroups} />
 
-      <Button variant="primary" onClick={() => handleShow("Create new List", "Create")}>
-        Create new List
-      </Button>
+      {connected && (
+        <Button variant="primary" onClick={() => handleShow("Create new List", "Create")}>
+          Create new List
+        </Button>
+      )}
       <CustomModal show={show} headerText={modalHeader} submitText={modalSubmit} onClose={handleClose} onSubmit={handleCreateNewList} />
     </div>
   );

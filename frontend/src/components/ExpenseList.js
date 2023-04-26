@@ -5,6 +5,9 @@ import Spinner from "./Spinner";
 
 const ExpenseList = (props) => {
   let expenses = [];
+
+  const handleDeleteExpense = (id) => props.handleDeleteExpense(id);
+
   let USDollar = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -22,7 +25,7 @@ const ExpenseList = (props) => {
         const borrowAmount = expense.debtAmounts[debtorIndexForUser];
         borrowLentInfo = borrowAmount > 0 && <p className="text-danger">you borrowed {USDollar.format(borrowAmount / 100)}</p>;
       }
-      return <ExpenseListItem key={index} name={expense.name} amount={expense.amount} spender={expense.spender} borrowLentInfo={borrowLentInfo} />;
+      return <ExpenseListItem key={index} id={expense.id} name={expense.name} amount={expense.amount} spender={expense.spender} borrowLentInfo={borrowLentInfo} handleDeleteExpense={handleDeleteExpense} />;
     });
   } else {
     expenses = <h4>No expenses at the moment. You're good to go.</h4>;

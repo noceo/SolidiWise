@@ -4,7 +4,7 @@ import { setCurrentAccount } from "./store/user/userSlice";
 import { setMetamaskInstalled, setMetamaskConnected } from "./store/util/utilSlice";
 import { EXPENSE_LIST_FACTORY_ADDRESS, EXPENSE_LIST_FACTORY_ABI, EXPENSE_LIST_ABI } from "./config.js";
 import Web3 from "web3";
-import { fetchExpenseGroups, addExpenseGroup } from "./store/expenseGroup/expenseGroupSlice";
+import { fetchExpenseGroups, addExpenseGroup, registerExpenseListEventHandlers } from "./store/expenseGroup/expenseGroupSlice";
 
 export const initializeWallet = async () => {
   const provider = await detectEthereumProvider();
@@ -29,6 +29,7 @@ export const initializeWallet = async () => {
       if (owner === currentAccount || participants.includes(currentAccount)) {
         console.log("ADD EXPENSE GROUP");
         const contract = new window.metamask.eth.Contract(EXPENSE_LIST_ABI, address);
+        registerExpenseListEventHandlers(address, contract);
         window.contracts[address] = contract;
         const name = await contract.methods.getName().call(tx_options);
         let owner = await contract.methods.getOwner().call(tx_options);

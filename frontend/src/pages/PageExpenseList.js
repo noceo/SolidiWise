@@ -17,7 +17,6 @@ const PageExpenseList = (props) => {
   const user = useSelector((state) => state.user);
   const connected = useSelector((state) => state.util.metamaskConnected);
   const expenseGroup = useSelector((state) => selectExpenseGroupById(state, id));
-  const debtBalances = useSelector((state) => state.expenseGroup.debtBalances);
   const loading = useSelector((state) => state.expenseGroup.loading);
   const dispatch = useDispatch();
   const [show, setShow] = useState(false);
@@ -66,6 +65,28 @@ const PageExpenseList = (props) => {
     }
   };
 
+  const handleDeleteExpense = async (expenseId) => {
+    console.log("DELETE", expenseId);
+    const tx_options = {
+      from: user.currentAccount,
+    };
+    try {
+      const tx = await window.contracts[id].methods.deleteExpense(expenseId).send(tx_options);
+      console.log(tx);
+      handleClose();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleReset = async () => {
+    const tx_options = {
+      from: user.currentAccount,
+    };
+    const test = await window.contracts[id].methods.reset().estimateGas(tx_options); //send(tx_options);
+    console.log(test);
+  };
+
   useEffect(() => {
     const initWallet = async () => {
       try {
@@ -88,6 +109,7 @@ const PageExpenseList = (props) => {
       const expenseGroup = store.getState().expenseGroup.data.find((group) => group.address === id);
       if (expenseGroup) {
         dispatch(fetchExpensesForGroup(expenseGroup.address));
+        dispatch(fetchDebtBalancesForGroup(expenseGroup.address));
       }
     }
   }, []);
@@ -98,8 +120,9 @@ const PageExpenseList = (props) => {
         <>
           <h2>{expenseGroup.name}</h2>
           <p>Owner of this list: {expenseGroup.owner}</p>
-          <DebtList debtBalances={debtBalances} />
-          <ExpenseList expenses={expenseGroup.expenses} loading={loading} user={user} />
+          {expenseGroup.expenses && expenseGroup.expenses.length > 0 && <Button onClick={handleReset}>Settle up</Button>}
+          <DebtList debtBalances={expenseGroup.debtBalances} />
+          <ExpenseList expenses={expenseGroup.expenses} loading={loading} user={user} handleDeleteExpense={handleDeleteExpense} />
           <Notes notes={expenseGroup.notes} />
           <Button onClick={() => handleShow("Create new Expense", "Create")}>Create new Expense</Button>
           <AddExpenseModal expenseGroup={expenseGroup} show={show} headerText={modalHeader} submitText={modalSubmit} onClose={handleClose} onSubmit={handleCreateNewExpense} />

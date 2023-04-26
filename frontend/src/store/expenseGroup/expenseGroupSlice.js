@@ -5,7 +5,6 @@ import { EXPENSE_LIST_ABI } from "../../config";
 const initialState = {
   loading: false,
   data: [],
-  debtBalances: [],
   error: "",
   // {
   //   id: 1,
@@ -51,6 +50,15 @@ const expenseGroupSlice = createSlice({
         state.data = data;
       }
     },
+    resetGroup: (state, action) => {
+      const groupIndex = state.data.findIndex((group) => group.address === action.payload);
+      if (groupIndex !== -1) {
+        let data = [...state.data];
+        data[groupIndex].expenses = [];
+        data[groupIndex].debtBalances = [];
+        state.data = data;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchExpenseGroups.pending, (state) => {
@@ -75,6 +83,7 @@ const expenseGroupSlice = createSlice({
     builder.addCase(fetchExpensesForGroup.fulfilled, (state, action) => {
       state.loading = false;
       const groupIndex = state.data.findIndex((group) => group.address === action.meta.arg);
+      console.log(groupIndex);
       state.data[groupIndex] = { ...state.data[groupIndex], expenses: action.payload };
       state.error = "";
     });
@@ -89,7 +98,8 @@ const expenseGroupSlice = createSlice({
     });
     builder.addCase(fetchDebtBalancesForGroup.fulfilled, (state, action) => {
       state.loading = false;
-      state.debtBalances = action.payload;
+      const groupIndex = state.data.findIndex((group) => group.address === action.meta.arg);
+      state.data[groupIndex] = { ...state.data[groupIndex], debtBalances: action.payload };
       state.error = "";
     });
     builder.addCase(fetchDebtBalancesForGroup.rejected, (state, action) => {
@@ -199,7 +209,7 @@ export const fetchDebtBalancesForGroup = createAsyncThunk("user/fetchDebtBalance
   return [];
 });
 
-const registerExpenseListEventHandlers = (groupId, contract) => {
+export const registerExpenseListEventHandlers = (groupId, contract) => {
   contract.events
     .LogNewExpense()
     .on("connected", (message) => console.log("ADD_EXPENSE_HANDLER_CONNECTED: ", message))
@@ -220,7 +230,16 @@ const registerExpenseListEventHandlers = (groupId, contract) => {
       store.dispatch(fetchDebtBalancesForGroup(groupId));
     })
     .on("error", (error) => console.error("ADD_EXPENSE_ERROR", error));
+
+  contract.events
+    .LogReset()
+    .on("connected", (message) => console.log("RESET_HANDLER_CONNECTED: ", message))
+    .on("data", (event) => {
+      console.log("RESET_LIST", event);
+      store.dispatch(resetGroup(groupId));
+    })
+    .on("error", (error) => console.error("RESET_ERROR", error));
 };
 
 export const expenseGroupReducer = expenseGroupSlice.reducer;
-export const { addExpenseGroup, removeExpenseGroup, addExpense } = expenseGroupSlice.actions;
+export const { addExpenseGroup, removeExpenseGroup, addExpense, resetGroup } = expenseGroupSlice.actions;
