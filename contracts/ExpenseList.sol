@@ -142,7 +142,22 @@ contract ExpenseList is AccessControlEnumerable {
 
   function reset() public onlyMember {
     for (uint i = 0; i < expenseIndices.length; i++) {
-      deleteExpense(expenseIndices[i]);
+      uint _id = expenseIndices[i];
+      Expense memory expenseToDelete = expenses[_id];
+      uint256 expenseIndexToDelete = expenseToDelete.storeIndex;
+      uint256 lastElementId = expenseIndices[expenseIndices.length-1];
+      expenseIndices[expenseIndexToDelete] = lastElementId;
+      expenses[lastElementId].storeIndex = expenseIndexToDelete;
+      expenseIndices.pop();
+
+      for (uint j = 0; j < expenseToDelete.debtors.length; j++) {
+        spenderToDebtors[expenseToDelete.spender][expenseToDelete.debtors[j]] -= debtAmounts[_id][expenseToDelete.debtors[j]];
+        debtAmounts[_id][expenseToDelete.debtors[j]] = 0;
+      }
+
+      delete expenses[_id];
+      emit LogDeleteExpense(_id);
+      // deleteExpense(expenseIndices[i]);
     }
     emit LogReset();
   }
