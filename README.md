@@ -1,6 +1,7 @@
 # Solidi-Wise
 
-This is a smart-contract application that supports bookkeeping for shared expenses.
+This is a smart-contract application that supports bookkeeping for shared expenses between two or more parties.
+
 To run this app locally you have to do the following steps.
 
 First make sure you have installed the latest `node` and `npm` versions.
